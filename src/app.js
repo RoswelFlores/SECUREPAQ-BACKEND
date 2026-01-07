@@ -1,16 +1,20 @@
-require('./config/db')
+require('./config/db');
+require('./config/mail');
+
 const express = require('express');
 const cors = require('cors');
 
+const authRoutes = require('./routes/auth.routes');
+
 const app = express();
 
-// Middlewares globales
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba
+app.use('/auth', authRoutes);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'SECUREPAQ backend activo' });
 });
 
-module.exports = app; // 👈 ESTO ES CLAVE
+module.exports = app;
