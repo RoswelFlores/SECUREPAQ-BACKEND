@@ -44,4 +44,32 @@ const sendNuevaEncomiendaMail = async (idResidente, otp) => {
   }
 };
 
-module.exports = { sendRecoverPasswordMail, sendNuevaEncomiendaMail };
+const sendRetiroConfirmadoMail = async (idResidente) => {
+  try {
+    console.log('[MAIL] Enviando correo confirmación retiro');
+
+    const residente = await residenteRepository.findById(idResidente);
+    console.log('Envio de correo de retiro', residente);
+
+    // await transporter.sendMail({
+    //   from: `"SECUREPAQ" <${process.env.MAIL_USER}>`,
+    //   to: residente.email,
+    //   subject: 'Encomienda retirada – SECUREPAQ',
+    //   html: `
+    //     <p>Estimado/a ${residente.nombre},</p>
+    //     <p>Le informamos que su encomienda ha sido retirada exitosamente.</p>
+    //     <p>Si usted no reconoce este retiro, por favor comuníquese con conserjería.</p>
+    //     <br/>
+    //     <p>Atentamente,<br/>Sistema SECUREPAQ</p>
+    //   `
+    // });
+
+    console.log('[MAIL] Correo retiro enviado a residente ID:', idResidente);
+
+  } catch (error) {
+    console.error('[MAIL] Error correo retiro:', error.message);
+    
+  }
+};
+
+module.exports = { sendRecoverPasswordMail, sendNuevaEncomiendaMail,sendRetiroConfirmadoMail };
