@@ -8,14 +8,14 @@ const conserjeriaController = require('../controllers/conserjeria.controller');
 router.get(
   '/dashboard',
   verifyToken,
-  authorizeRoles('CONSERJERIA'),
+  authorizeRoles('CONSERJERIA', 'ADMIN'),
   conserjeriaController.obtenerDashboard
 );
 
 router.get(
   '/encomiendas',
   verifyToken,
-  authorizeRoles('CONSERJERIA'),
+  authorizeRoles('CONSERJERIA', 'ADMIN'),
   conserjeriaController.obtenerListado
 );
 
