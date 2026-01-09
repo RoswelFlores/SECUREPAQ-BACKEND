@@ -1,6 +1,7 @@
 const encomiendaRepository = require('../repositories/encomienda.repository');
 const auditoriaService = require('./auditoria.service');
 const otpService = require('./otp.service');
+const otpRepository = require('../repositories/otp.repository');
 const mailService = require('./mail.service');
 
 const registrarEncomienda = async (data, usuario) => {
@@ -46,7 +47,7 @@ const registrarEncomienda = async (data, usuario) => {
     );
 
    
-    await mailService.sendNuevaEncomiendaMail(id_residente, otp);
+    await mailService.sendNuevaEncomiendaMail(id_residente, otp , idEncomienda);
 
     console.log('[ENCOMIENDA] Registro exitoso ID:', idEncomienda);
 
@@ -60,5 +61,43 @@ const registrarEncomienda = async (data, usuario) => {
     throw error;
   }
 };
+const confirmarRetiro = async (idEncomienda, observacion, usuario) => {
+  try {
+    console.log('[RETIRO] Confirmando retiro encomienda ID:', idEncomienda);
 
-module.exports = { registrarEncomienda };
+    const otp = await otpRepository.findByCodigoValidoPorEncomienda(idEncomienda);
+
+    if (!otp) {
+      throw new Error('No existe OTP válido para esta encomienda');
+    }
+
+    
+    await otpRepository.marcarComoUsado(otp.id_otp);
+
+
+    await encomiendaRepository.actualizarEstado(idEncomienda, 'RETIRADA');
+
+  
+    await auditoriaService.registrar(
+      'RETIRO_ENCOMIENDA',
+      usuario.email,
+      idEncomienda
+    );
+
+    
+    const idResidente = await encomiendaRepository.findResidenteByEncomienda(idEncomienda);
+    await mailService.sendRetiroConfirmadoMail(idResidente,idEncomienda);
+
+    console.log('[RETIRO] Retiro confirmado encomienda ID:', idEncomienda);
+
+    return {
+      message: 'Encomienda retirada correctamente'
+    };
+
+  } catch (error) {
+    console.error('[RETIRO] Error retiro:', error.message);
+    throw error;
+  }
+};
+
+module.exports = { registrarEncomienda, confirmarRetiro };

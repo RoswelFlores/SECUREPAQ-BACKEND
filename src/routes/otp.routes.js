@@ -12,11 +12,4 @@ router.post(
   otp.validarOTP
 );
 
-router.post(
-  '/confirmar-retiro',
-  verifyToken,
-  authorizeRoles('CONSERJERIA'),
-  otp.confirmarRetiro
-);
-
 module.exports = router;

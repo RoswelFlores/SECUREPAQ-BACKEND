@@ -12,4 +12,12 @@ router.post(
   encomiendaController.registrar
 );
 
+router.post(
+  '/confirmar-retiro',
+  verifyToken,
+  authorizeRoles('CONSERJERIA'),
+  encomiendaController.confirmarRetiro
+);
+
+
 module.exports = router;

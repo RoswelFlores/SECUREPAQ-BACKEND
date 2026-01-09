@@ -51,48 +51,10 @@ const validarOTP = async (codigo) => {
   }
 };
 
-const confirmarRetiro = async (idEncomienda, observacion, usuario) => {
-  try {
-    console.log('[RETIRO] Confirmando retiro encomienda ID:', idEncomienda);
 
-    const otp = await otpRepository.findByCodigoValidoPorEncomienda(idEncomienda);
-
-    if (!otp) {
-      throw new Error('No existe OTP válido para esta encomienda');
-    }
-
-    
-    await otpRepository.marcarComoUsado(otp.id_otp);
-
-
-    await encomiendaRepository.actualizarEstado(idEncomienda, 'RETIRADA');
-
-  
-    await auditoriaService.registrar(
-      'RETIRO_ENCOMIENDA',
-      usuario.email,
-      idEncomienda
-    );
-
-    
-    const idResidente = await encomiendaRepository.findResidenteByEncomienda(idEncomienda);
-    await mailService.sendRetiroConfirmadoMail(idResidente);
-
-    console.log('[RETIRO] Retiro confirmado encomienda ID:', idEncomienda);
-
-    return {
-      message: 'Encomienda retirada correctamente'
-    };
-
-  } catch (error) {
-    console.error('[RETIRO] Error retiro:', error.message);
-    throw error;
-  }
-};
 
 
 module.exports = {
   generarYGuardarOTP,
-  validarOTP,
-  confirmarRetiro
+  validarOTP
 };

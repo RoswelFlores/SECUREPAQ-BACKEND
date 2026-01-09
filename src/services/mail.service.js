@@ -1,9 +1,17 @@
 const transporter = require('../config/mail');
 const residenteRepository = require('../repositories/residente.repository');
-
+const notificacionService = require('./notificacion.service');
 
 const sendRecoverPasswordMail = async (to, password) => {
   try {
+    
+       await notificacionService.registrarNotificacion(
+      'Recuperación de contraseña enviada al usuario',
+      idUsuario,
+      null,
+      'RECOVER_PASSWORD'
+      );
+
     console.log('[MAIL] Simulando envío de correo a:', to , 'con contraseña:', password);
     // await transporter.sendMail({
     //   from: `"SECUREPAQ" <${process.env.MAIL_USER}>`,
@@ -24,9 +32,17 @@ const sendRecoverPasswordMail = async (to, password) => {
 
 
 
-const sendNuevaEncomiendaMail = async (idResidente, otp) => {
+const sendNuevaEncomiendaMail = async (idResidente, otp , idEncomienda) => {
   try {
     const residente = await residenteRepository.findById(idResidente);
+
+    await notificacionService.registrarNotificacion(
+      'Nueva encomienda registrada',
+      residente.id_residente,
+      idEncomienda,
+      'NUEVA_ENCOMIENDA'
+    );
+
     console.log('[MAIL] Simulando envío de correo a:', residente.email , 'con OTP:', otp);
     // await transporter.sendMail({
     //   from: `"SECUREPAQ" <${process.env.MAIL_USER}>`,
@@ -44,8 +60,16 @@ const sendNuevaEncomiendaMail = async (idResidente, otp) => {
   }
 };
 
-const sendRetiroConfirmadoMail = async (idResidente) => {
+const sendRetiroConfirmadoMail = async (idResidente,idEncomienda) => {
   try {
+
+    await notificacionService.registrarNotificacion(
+      'Encomienda retirada exitosamente',
+      idResidente,
+      idEncomienda,
+      'RETIRO_CONFIRMADO'
+    );
+
     console.log('[MAIL] Enviando correo confirmación retiro');
 
     const residente = await residenteRepository.findById(idResidente);
