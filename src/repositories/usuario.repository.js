@@ -35,7 +35,16 @@ const findByEmail = async (email) => {
   return rows[0] || null;
 };
 
+const countAllUsers = async () => {
+  const [rows] = await pool.execute(
+    'SELECT COUNT(*) as total FROM usuario WHERE activo = true'
+  );
+
+  return rows[0] || null;
+};
+
 module.exports = {
   findByEmailWithRoles,
-  findByEmail
+  findByEmail,
+  countAllUsers
 };
