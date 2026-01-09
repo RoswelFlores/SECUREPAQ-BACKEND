@@ -77,10 +77,65 @@ const findResidenteByEncomienda = async (idEncomienda) => {
   return rows[0]?.id_residente;
 };
 
+const countPendientesHoy = async () => {
+  const [rows] = await pool.execute(
+    `
+    SELECT COUNT(*) AS total
+    FROM encomienda
+    WHERE estado = 'RECIBIDA'
+      AND DATE(fecha_recepcion) = CURDATE()
+    `
+  );
+  return rows[0].total;
+};
+
+const countRetiradasHoy = async () => {
+  const [rows] = await pool.execute(
+    `
+    SELECT COUNT(*) AS total
+    FROM auditoria_encomienda
+    WHERE accion = 'RETIRO_ENCOMIENDA'
+      AND DATE(fecha_evento) = CURDATE()
+    `
+  );
+  return rows[0].total;
+};
+
+const findListadoConserjeria = async () => {
+  const [rows] = await pool.execute(
+    `
+    SELECT 
+      o.codigo AS otp,
+      e.tracking,
+      c.nombre AS courier,
+      r.nombre AS residente,
+      d.numero AS departamento,
+      e.fecha_recepcion,
+      a.fecha_evento AS fecha_retiro,
+      e.estado
+    FROM encomienda e
+    JOIN courier c ON e.id_courier = c.id_courier
+    JOIN residente r ON e.id_residente = r.id_residente
+    JOIN departamento d ON r.id_departamento = d.id_departamento
+    LEFT JOIN otp_encomienda o 
+      ON o.id_encomienda = e.id_encomienda AND o.usado = false
+    LEFT JOIN auditoria_encomienda a 
+      ON a.id_encomienda = e.id_encomienda 
+     AND a.accion = 'RETIRO_ENCOMIENDA'
+    ORDER BY e.fecha_recepcion DESC
+    `
+  );
+
+  return rows;
+};
+
 module.exports = {
   insertar,
   actualizarEstado,
   findDetalleById,
   findResidenteByEncomienda,
-  findPendientesMas3Dias
+  findPendientesMas3Dias,
+  countPendientesHoy,
+  countRetiradasHoy,
+  findListadoConserjeria
 };
