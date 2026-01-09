@@ -1,5 +1,5 @@
 const encomiendaRepository = require('../repositories/encomienda.repository');
-const notificacionService = require('./notificacion.service');
+const mailService = require('./mail.service');
 
 const ejecutarRecordatorios = async () => {
   try {
@@ -13,14 +13,8 @@ const ejecutarRecordatorios = async () => {
     }
 
     for (const enc of encomiendas) {
-      await notificacionService.registrarNotificacion(
-        'Recordatorio: tiene una encomienda pendiente de retiro',
-        enc.id_residente,
-        enc.id_encomienda,
-        'RECORDATORIO_3_DIAS'
-      );
-
-      console.log('[JOB] Recordatorio generado encomienda ID:', enc.id_encomienda);
+      await mailService.sendRecordatorioMail(enc);
+      console.log('[JOB] Recordatorio enviado encomienda ID:', enc.id_encomienda);
     }
 
   } catch (error) {

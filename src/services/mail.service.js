@@ -96,4 +96,45 @@ const sendRetiroConfirmadoMail = async (idResidente,idEncomienda) => {
   }
 };
 
-module.exports = { sendRecoverPasswordMail, sendNuevaEncomiendaMail,sendRetiroConfirmadoMail };
+const sendRecordatorioMail = async (recordatorio) => {
+  try {
+    if (!recordatorio) {
+      throw new Error('Recordatorio no definido');
+    }
+
+    const idResidente = recordatorio.id_residente;
+    const idEncomienda = recordatorio.id_encomienda;
+    const email = recordatorio.email;
+    const nombre = recordatorio.nombre || 'residente';
+
+    await notificacionService.registrarNotificacion(
+      'Recordatorio: tiene una encomienda pendiente de retiro',
+      idResidente,
+      idEncomienda,
+      'RECORDATORIO_3_DIAS'
+    );
+
+    console.log('[MAIL] Simulando envio de recordatorio a:', email, 'encomienda:', idEncomienda);
+    // await transporter.sendMail({
+    //   from: `"SECUREPAQ" <${process.env.MAIL_USER}>`,
+    //   to: email,
+    //   subject: 'Recordatorio de encomienda pendiente',
+    //   html: `
+    //     <p>Estimado/a ${nombre},</p>
+    //     <p>Tiene una encomienda pendiente de retiro.</p>
+    //     <p>Por favor acuda a conserjeria para realizar el retiro.</p>
+    //     <br/>
+    //     <p>Atentamente,<br/>Sistema SECUREPAQ</p>
+    //   `
+    // });
+  } catch (error) {
+    console.error('[MAIL] Error correo recordatorio:', error.message);
+  }
+};
+
+module.exports = {
+  sendRecoverPasswordMail,
+  sendNuevaEncomiendaMail,
+  sendRetiroConfirmadoMail,
+  sendRecordatorioMail
+};
