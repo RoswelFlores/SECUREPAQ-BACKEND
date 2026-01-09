@@ -28,17 +28,24 @@ const actualizarEstado = async (idEncomienda, estado) => {
   );
 };
 
-const actualizarRetiro = async (idEncomienda, observacion) => {
-  await pool.execute(
+const findPendientesMas3Dias = async () => {
+  const [rows] = await pool.execute(
     `
-    UPDATE encomienda
-    SET estado = 'RETIRADA',
-        observacion = ?
-    WHERE id_encomienda = ?
-    `,
-    [observacion || null, idEncomienda]
+    SELECT 
+      e.id_encomienda,
+      e.id_residente,
+      r.email,
+      r.nombre
+    FROM encomienda e
+    JOIN residente r ON e.id_residente = r.id_residente
+    WHERE e.estado = 'RECIBIDA'
+      AND e.fecha_recepcion <= DATE_SUB(NOW(), INTERVAL 3 DAY)
+    `
   );
+
+  return rows;
 };
+
 
 const findDetalleById = async (idEncomienda) => {
   const [rows] = await pool.execute(
@@ -74,5 +81,6 @@ module.exports = {
   insertar,
   actualizarEstado,
   findDetalleById,
-  findResidenteByEncomienda
+  findResidenteByEncomienda,
+  findPendientesMas3Dias
 };

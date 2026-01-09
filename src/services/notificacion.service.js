@@ -31,7 +31,7 @@ const registrarNotificacion = async (
 
   } catch (error) {
     console.error('[NOTIFICACION] Error:', error.message);
-    // ⚠️ No romper flujo principal
+
   }
 };
 
