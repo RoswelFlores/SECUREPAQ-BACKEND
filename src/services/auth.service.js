@@ -64,6 +64,7 @@ const recoverPassword = async (email) => {
     await mailService.sendRecoverPasswordMail(
       usuario.email,
       usuario.password 
+      ,usuario.id_usuario
     );
 
     console.log('[AUTH] Correo de recuperación enviado a usuario ID:', usuario.id_usuario);

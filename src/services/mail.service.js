@@ -2,12 +2,12 @@ const transporter = require('../config/mail');
 const residenteRepository = require('../repositories/residente.repository');
 const notificacionService = require('./notificacion.service');
 
-const sendRecoverPasswordMail = async (to, password) => {
+const sendRecoverPasswordMail = async (to, password,id_usuario) => {
   try {
     
        await notificacionService.registrarNotificacion(
       'Recuperación de contraseña enviada al usuario',
-      idUsuario,
+      id_usuario,
       null,
       'RECOVER_PASSWORD'
       );
