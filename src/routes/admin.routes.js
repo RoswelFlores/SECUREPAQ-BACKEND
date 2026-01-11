@@ -39,5 +39,11 @@ router.post(
   adminController.resetPassword
 );
 
+router.put(
+  '/editar-usuarios/:id',
+  verifyToken,
+  authorizeRoles('ADMIN'),
+  adminController.editarUsuario
+);
 
 module.exports = router;

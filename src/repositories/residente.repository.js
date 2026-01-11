@@ -36,7 +36,38 @@ const crear = async ({ nombre, rut, email, telefono, is_active, id_departamento 
   return result.insertId;
 };
 
+const actualizarPorEmail = async (emailActual, datosActualizados, connection) => {
+  const executor = getExecutor(connection);
+  const camposPermitidos = ['nombre', 'rut', 'telefono', 'email', 'id_departamento', 'activo'];
+  const fields = [];
+  const values = [];
+
+  for (const campo of camposPermitidos) {
+    if (datosActualizados[campo] !== undefined) {
+      fields.push(`${campo} = ?`);
+      values.push(datosActualizados[campo]);
+    }
+  }
+
+  if (fields.length === 0) {
+    return { skipped: true };
+  }
+
+  values.push(emailActual);
+  const [result] = await executor.execute(
+    `UPDATE residente SET ${fields.join(', ')} WHERE email = ?`,
+    values
+  );
+
+  if (result.affectedRows === 0) {
+    throw new Error('Residente no encontrado');
+  }
+
+  return result;
+};
+
 module.exports = {
   findById,
-  crear
+  crear,
+  actualizarPorEmail
 };

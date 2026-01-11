@@ -135,4 +135,76 @@ const resetPassword = async (idUsuario) => {
   }
 };
 
-module.exports = { countAllUsers, listarUsuarios, crearUsuario, cambiarEstado, resetPassword };
+const editarUsuario = async (idUsuario, data) => {
+  const connection = await pool.getConnection();
+  let transactionActive = false;
+  try {
+    console.log('[ADMIN] Editando usuario:', idUsuario);
+    
+    await connection.beginTransaction();
+    transactionActive = true;
+
+    const usuarioActual = await usuarioRepository.findById(idUsuario, connection);
+    if (!usuarioActual) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    const usuarioData = {};
+    if (data.email !== undefined) {
+      usuarioData.email = data.email;
+    }
+    if (data.activo !== undefined) {
+      usuarioData.activo = data.activo;
+    }
+    if (Object.keys(usuarioData).length > 0) {
+      await usuarioRepository.actualizarUsuarioDatos(idUsuario, usuarioData, connection);
+    }
+
+    if (data.rol !== undefined) {
+      await usuarioRepository.actualizarRolUsuario(idUsuario, data.rol, connection);
+    }
+
+    const residenteData = {};
+    if (data.nombre !== undefined) {
+      residenteData.nombre = data.nombre;
+    }
+    if (data.rut !== undefined) {
+      residenteData.rut = data.rut;
+    }
+    if (data.telefono !== undefined) {
+      residenteData.telefono = data.telefono;
+    }
+    if (data.id_departamento !== undefined) {
+      residenteData.id_departamento = data.id_departamento;
+    }
+    if (data.email !== undefined) {
+      residenteData.email = data.email;
+    }
+    if (data.is_active !== undefined) {
+      residenteData.activo = data.is_active;
+    }
+    if (Object.keys(residenteData).length > 0) {
+      await residenteRepository.actualizarPorEmail(
+        usuarioActual.email,
+        residenteData,
+        connection
+      );
+    }
+
+    await connection.commit();
+    transactionActive = false;
+
+    return { message: 'Usuario actualizado correctamente' };
+
+  } catch (error) {
+    if (transactionActive) {
+      await connection.rollback();
+    }
+    console.error('[ADMIN] Error editar usuario:', error.message);
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+module.exports = { countAllUsers, listarUsuarios, crearUsuario, cambiarEstado, resetPassword, editarUsuario };

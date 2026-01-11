@@ -69,5 +69,17 @@ const resetPassword = async (req, res) => {
     });
   }
 };
-
-module.exports = { countAllUsers, getUsuarios, crearUsuario,cambiarEstado, resetPassword };
+const editarUsuario = async (req, res) => {
+  try {
+    const idUsuario = req.params.id;
+    const datosActualizados = req.body;
+    await adminService.editarUsuario(idUsuario, datosActualizados);
+    res.json({ message: 'Usuario actualizado correctamente' });
+  } catch (error) {
+    res.status(400).json({
+      message: 'No se pudo actualizar el usuario.',
+      error: error.message
+    });
+  }
+};
+module.exports = { countAllUsers, getUsuarios, crearUsuario,cambiarEstado, resetPassword, editarUsuario };

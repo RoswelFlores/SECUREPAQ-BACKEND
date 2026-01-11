@@ -139,11 +139,80 @@ const actualizarPassword = async (idUsuario, nuevaPasswordHash, connection) => {
   );
 };
 
+const editarUsuario = async (idUsuario, datosActualizados, connection) => {
+  const executor = getExecutor(connection);
+  const fields = [];
+  const values = [];
+  for (const [key, value] of Object.entries(datosActualizados)) {
+    fields.push(`${key} = ?`);
+    values.push(value);
+  }
+  values.push(idUsuario);
+
+  const sql = `UPDATE usuario SET ${fields.join(', ')} WHERE id_usuario = ?`;
+  const [result] = await executor.execute(sql, values);
+  if (result.affectedRows === 0) {
+    throw new Error('Usuario no encontrado');
+  }
+  return result;;
+}
+
+const actualizarUsuarioDatos = async (idUsuario, datosActualizados, connection) => {
+  const executor = getExecutor(connection);
+  const camposPermitidos = ['email', 'activo'];
+  const fields = [];
+  const values = [];
+
+  for (const campo of camposPermitidos) {
+    if (datosActualizados[campo] !== undefined) {
+      fields.push(`${campo} = ?`);
+      values.push(datosActualizados[campo]);
+    }
+  }
+
+  if (fields.length === 0) {
+    return { skipped: true };
+  }
+
+  values.push(idUsuario);
+  const [result] = await executor.execute(
+    `UPDATE usuario SET ${fields.join(', ')} WHERE id_usuario = ?`,
+    values
+  );
+
+  if (result.affectedRows === 0) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  return result;
+};
+
+const actualizarRolUsuario = async (idUsuario, rol, connection) => {
+  const executor = getExecutor(connection);
+  const role_row = await findRoleByName(rol, connection);
+  if (!role_row) {
+    throw new Error('Rol no encontrado');
+  }
+
+  const [result] = await executor.execute(
+    'UPDATE usuario_rol SET id_rol = ? WHERE id_usuario = ?',
+    [role_row.id_rol, idUsuario]
+  );
+
+  if (result.affectedRows === 0) {
+    await executor.execute(
+      'INSERT INTO usuario_rol (id_usuario, id_rol) VALUES (?, ?)',
+      [idUsuario, role_row.id_rol]
+    );
+  }
+};
+
 module.exports = {
   findByEmailWithRoles,
   findByEmail,
   countAllUsers,
   findAll,asignarRol,
   crearUsuario,actualizarUsuario,
-  findById,actualizarPassword
+  findById,actualizarPassword,editarUsuario,
+  actualizarUsuarioDatos,actualizarRolUsuario
 };
