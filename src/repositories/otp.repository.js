@@ -49,8 +49,32 @@ const findByCodigoValidoPorEncomienda = async (idEncomienda) => {
   return rows[0] || null;
 };
 
+const marcarPorEncomiendaComoUsado = async (idEncomienda) => {
+  await pool.execute(
+    `
+    UPDATE otp_encomienda
+    SET usado = true
+    WHERE id_encomienda = ?
+      AND usado = false
+    `,
+    [idEncomienda]
+  );
+};
+
+const updateOtpByEconmienda = async (idEncomienda, codigo, fechaExpiracion) => {
+  await pool.execute(
+    `
+    UPDATE otp_encomienda
+    SET codigo = ?, fecha_expiracion = ?  
+    WHERE id_encomienda = ?
+    `,
+    [codigo, fechaExpiracion, idEncomienda]
+  );
+};
 
 module.exports = {
   insertar, findByCodigoValido,
-  marcarComoUsado,findByCodigoValidoPorEncomienda
+  marcarComoUsado,findByCodigoValidoPorEncomienda,
+  marcarPorEncomiendaComoUsado,
+  updateOtpByEconmienda
 };

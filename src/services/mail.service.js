@@ -132,9 +132,50 @@ const sendRecordatorioMail = async (recordatorio) => {
   }
 };
 
+
+const sendRegenerarOtpMail = async (idResidente, otp, idEncomienda) => {
+  try {
+    const residente = await residenteRepository.findById(idResidente);
+
+    await notificacionService.registrarNotificacion(
+      'Se ha generado un nuevo código OTP para su encomienda',
+      idResidente,
+      idEncomienda,
+      'REGENERAR_OTP'
+    );
+
+    console.log(
+      '[MAIL] Simulando correo regenerar OTP a:',
+      residente.email,
+      'OTP:',
+      otp
+    );
+
+    // await transporter.sendMail({
+    //   from: `"SECUREPAQ" <${process.env.MAIL_USER}>`,
+    //   to: residente.email,
+    //   subject: 'Nuevo código OTP para retiro – SECUREPAQ',
+    //   html: `
+    //     <p>Estimado/a ${residente.nombre},</p>
+    //     <p>Se ha generado un nuevo código OTP para el retiro de su encomienda.</p>
+    //     <p><strong>Código OTP:</strong> ${otp}</p>
+    //     <p>Este código reemplaza al anterior y tiene vigencia limitada.</p>
+    //     <br/>
+    //     <p>Atentamente,<br/>Sistema SECUREPAQ</p>
+    //   `
+    // });
+
+  } catch (error) {
+    console.error('[MAIL] Error correo regenerar OTP:', error.message);
+  
+  }
+};
+
+
 module.exports = {
   sendRecoverPasswordMail,
   sendNuevaEncomiendaMail,
   sendRetiroConfirmadoMail,
-  sendRecordatorioMail
+  sendRecordatorioMail,
+  sendRegenerarOtpMail
 };

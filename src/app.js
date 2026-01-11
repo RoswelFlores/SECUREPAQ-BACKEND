@@ -11,7 +11,7 @@ const otpRoutes = require('./routes/otp.routes');
 const notificacionRoutes = require('./routes/notificacion.routes');
 const conserjeriaRoutes = require('./routes/conserjeria.routes');
 const adminRoutes = require('./routes/admin.routes');
-
+const residenteRoutes = require('./routes/residente.routes');
 const app = express();
 
 app.use(cors());
@@ -23,6 +23,8 @@ app.use('/otp', otpRoutes);
 app.use('/notificaciones', notificacionRoutes);
 app.use('/conserjeria', conserjeriaRoutes);
 app.use('/admin', adminRoutes);
+app.use('/residente', residenteRoutes);
+
 
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'SECUREPAQ backend activo' });

@@ -129,6 +129,62 @@ const findListadoConserjeria = async () => {
   return rows;
 };
 
+const findPendientesByResidente = async (idResidente) => {
+  const [rows] = await pool.execute(
+    `
+    SELECT
+      e.id_encomienda,
+      c.nombre AS courier,
+      e.tracking,
+      e.fecha_recepcion,
+      o.codigo AS otp,
+      o.fecha_expiracion
+    FROM encomienda e
+    JOIN courier c ON e.id_courier = c.id_courier
+    JOIN otp_encomienda o ON o.id_encomienda = e.id_encomienda
+    WHERE e.id_residente = ?
+      AND e.estado = 'RECIBIDA'
+      AND o.usado = false
+      AND o.fecha_expiracion > NOW()
+    ORDER BY e.fecha_recepcion DESC
+    `,
+    [idResidente]
+  );
+
+  return rows;
+};
+
+const findHistorialByResidente = async (idResidente) => {
+  const [rows] = await pool.execute(
+    `
+    SELECT
+      c.nombre AS courier,
+      e.tracking,
+      e.fecha_recepcion,
+      a.fecha_evento AS fecha_retiro
+    FROM encomienda e
+    JOIN courier c ON e.id_courier = c.id_courier
+    JOIN auditoria_encomienda a 
+      ON a.id_encomienda = e.id_encomienda
+     AND a.accion = 'RETIRO_ENCOMIENDA'
+    WHERE e.id_residente = ?
+    ORDER BY a.fecha_evento DESC
+    `,
+    [idResidente]
+  );
+
+  return rows;
+};
+
+const findById = async (idEncomienda) => {
+  const [rows] = await pool.execute(
+    'SELECT * FROM encomienda WHERE id_encomienda = ?',
+    [idEncomienda]
+  );  
+  return rows[0];
+};
+
+
 module.exports = {
   insertar,
   actualizarEstado,
@@ -137,5 +193,8 @@ module.exports = {
   findPendientesMas3Dias,
   countPendientesHoy,
   countRetiradasHoy,
-  findListadoConserjeria
+  findListadoConserjeria,
+  findPendientesByResidente,
+  findHistorialByResidente,
+  findById
 };
