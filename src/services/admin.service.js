@@ -1,6 +1,8 @@
 const usuarioRepository = require('../repositories/usuario.repository');
 const residenteRepository = require('../repositories/residente.repository');
 const mailService = require('./mail.service');  
+const pool = require('../config/db');
+const bcrypt = require('bcrypt');
 
 
 const countAllUsers = async () => {
@@ -29,67 +31,102 @@ const listarUsuarios = async () => {
 
 
 const crearUsuario = async (data) => {
+  const connection = await pool.getConnection();
+  let transactionActive = false;
   try {
     console.log('[ADMIN] Creando usuario:', data.email);
 
+    await connection.beginTransaction();
+    transactionActive = true;
+
     const { idUsuario, passwordTemporal } =
-      await usuarioRepository.crearUsuario(data);
+      await usuarioRepository.crearUsuario(data, connection);
 
-    await usuarioRepository.asignarRol(idUsuario, data.rol);
+    await usuarioRepository.asignarRol(idUsuario, data.rol, connection);
     let id_departamento = data.id_departamento || null;
-   
-    
-      await residenteRepository.crear({
-        nombre: data.nombre,
-        rut: data.rut,
-        telefono: data.telefono,
-        email: data.email,
-        is_active : !id_departamento,
-        id_departamento: id_departamento
-      });
 
-   
-    await mailService.sendRecoverPasswordMail(
-      data.email,
-      passwordTemporal,
-      idUsuario
-    );
+    await residenteRepository.crear({
+      nombre: data.nombre,
+      rut: data.rut,
+      telefono: data.telefono,
+      email: data.email,
+      is_active : !id_departamento,
+      id_departamento: id_departamento
+    }, connection);
+
+    await connection.commit();
+    transactionActive = false;
+
+    try {
+      await mailService.sendRecoverPasswordMail(
+        data.email,
+        passwordTemporal,
+        idUsuario
+      );
+    } catch (mailError) {
+      console.error('[ADMIN] Error enviando correo:', mailError.message);
+      throw new Error('Usuario creado, pero no se pudo enviar el correo de recuperacion.');
+    }
 
     return { message: 'Usuario creado correctamente' };
 
   } catch (error) {
+    if (transactionActive) {
+      await connection.rollback();
+    }
     console.error('[ADMIN] Error crear usuario:', error.message);
     throw error;
+  } finally {
+    connection.release();
   }
 };
 
 
 const cambiarEstado = async (idUsuario, activo) => {
+  const connection = await pool.getConnection();
+  let transactionActive = false;
   try {
     console.log('[ADMIN] Cambiando estado usuario:', idUsuario);
-    await usuarioRepository.actualizarUsuario(idUsuario, activo);
+    let userExists = await usuarioRepository.findById(idUsuario, connection);
+    if (!userExists) {
+      throw new Error('Usuario no encontrado');
+    }
+    await usuarioRepository.actualizarUsuario(idUsuario, activo, connection);
     return { message: 'Estado actualizado' };
   } catch (error) {
+    if (transactionActive) {
+      await connection.rollback();
+    }
     throw error;
+  } finally {
+    connection.release();
   }
 };
 
 const resetPassword = async (idUsuario) => {
+  const connection = await pool.getConnection();
   try {
     console.log('[ADMIN] Reset password usuario:', idUsuario);
 
     const nuevaPassword = Math.random().toString(36).slice(-8);
     const hash = await bcrypt.hash(nuevaPassword, 10);
 
-    await usuarioRepository.actualizarPassword(idUsuario, hash);
+    await connection.beginTransaction();
+    await usuarioRepository.actualizarPassword(idUsuario, hash, connection);
 
-    const usuario = await usuarioRepository.findById(idUsuario);
+    const usuario = await usuarioRepository.findById(idUsuario, connection);
+    await connection.commit();
 
-    await mailService.sendRecoverPasswordMail(
-      usuario.email,
-      nuevaPassword,
-      idUsuario
-    );
+    try {
+      await mailService.sendRecoverPasswordMail(
+        usuario.email,
+        nuevaPassword,
+        idUsuario
+      );
+    } catch (mailError) {
+      console.error('[ADMIN] Error enviando correo:', mailError.message);
+      throw new Error('Contrasena actualizada, pero no se pudo enviar el correo de recuperacion.');
+    }
 
     return { message: 'Contraseña reseteada' };
 

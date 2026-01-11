@@ -1,7 +1,10 @@
 const pool = require('../config/db');
 
-const findById = async (idResidente) => {
-  const [rows] = await pool.execute(
+const getExecutor = (connection) => connection || pool;
+
+const findById = async (idResidente, connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
     `
     SELECT 
       r.id_residente,
@@ -19,8 +22,9 @@ const findById = async (idResidente) => {
   return rows[0] || null;
 };
 
-const crear = async ({ nombre, rut, email, telefono, is_active, id_departamento }) => {
-  const [result] = await pool.execute(
+const crear = async ({ nombre, rut, email, telefono, is_active, id_departamento }, connection) => {
+  const executor = getExecutor(connection);
+  const [result] = await executor.execute(
     `
     INSERT INTO residente
     (nombre, rut, email, telefono, activo, id_departamento)

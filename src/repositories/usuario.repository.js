@@ -1,8 +1,11 @@
 const pool = require('../config/db');
 const bcrypt = require('bcrypt');
 
-const findByEmailWithRoles = async (email) => {
-  const [rows] = await pool.execute(
+const getExecutor = (connection) => connection || pool;
+
+const findByEmailWithRoles = async (email, connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
     `
     SELECT 
       u.id_usuario,
@@ -27,8 +30,9 @@ const findByEmailWithRoles = async (email) => {
   };
 };
 
-const findByEmail = async (email) => {
-  const [rows] = await pool.execute(
+const findByEmail = async (email, connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
     'SELECT id_usuario, email, password FROM usuario WHERE email = ? AND activo = true',
     [email]
   );
@@ -36,8 +40,9 @@ const findByEmail = async (email) => {
   return rows[0] || null;
 };
 
-const countAllUsers = async () => {
-  const [rows] = await pool.execute(
+const countAllUsers = async (connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
     'SELECT COUNT(*) as total FROM usuario WHERE activo = true'
   );
 
@@ -45,8 +50,9 @@ const countAllUsers = async () => {
 };
 
 
-const findAll = async () => {
-  const [rows] = await pool.execute(
+const findAll = async (connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
     `
     SELECT
       u.id_usuario,
@@ -71,11 +77,12 @@ const findAll = async () => {
 };
 
 
-const crearUsuario = async ({ email, rol }) => {
+const crearUsuario = async ({ email, rol }, connection) => {
+  const executor = getExecutor(connection);
   const passwordTemporal = Math.random().toString(36).slice(-8);
   const hash = await bcrypt.hash(passwordTemporal, 10);
 
-  const [result] = await pool.execute(
+  const [result] = await executor.execute(
     `
     INSERT INTO usuario (email, password, activo)
     VALUES (?, ?, true)
@@ -85,36 +92,48 @@ const crearUsuario = async ({ email, rol }) => {
 
   return { idUsuario: result.insertId, passwordTemporal };
 };
-
-const asignarRol = async (idUsuario, rol) => {
-  const [[rolRow]] = await pool.execute(
+const findRoleByName = async (nombre_rol, connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
     'SELECT id_rol FROM rol WHERE nombre_rol = ?',
-    [rol]
+    [nombre_rol]
   );
+  return rows[0] || null;
+};
 
-  await pool.execute(
+const asignarRol = async (idUsuario, rol, connection) => {
+  const executor = getExecutor(connection);
+  const role_row = await findRoleByName(rol, connection);
+  await executor.execute(
     'INSERT INTO usuario_rol (id_usuario, id_rol) VALUES (?, ?)',
-    [idUsuario, rolRow.id_rol]
+    [idUsuario, role_row.id_rol]
   );
 };
 
-const actualizarUsuario = async (idUsuario, activo) => {
-  await pool.execute(
+const actualizarUsuario = async (idUsuario, activo, connection) => {
+  const executor = getExecutor(connection);
+  row =  await executor.execute(
     'UPDATE usuario SET activo = ? WHERE id_usuario = ?',
     [activo, idUsuario]
   );
+  if (row.affectedRows == 0 && row.changedRows == 0) {
+    throw new Error('Usuario no encontrado');
+  }
+  return row;
 };
 
-const findById = async (idUsuario) => {
-  const [rows] = await pool.execute(
+const findById = async (idUsuario, connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
     'SELECT id_usuario, email FROM usuario WHERE id_usuario = ?',
     [idUsuario]
   );
   return rows[0] || null;
 };
 
-const actualizarPassword = async (idUsuario, nuevaPasswordHash) => {
-  await pool.execute(
+const actualizarPassword = async (idUsuario, nuevaPasswordHash, connection) => {
+  const executor = getExecutor(connection);
+  await executor.execute(
     'UPDATE usuario SET password = ? WHERE id_usuario = ?',
     [nuevaPasswordHash, idUsuario]
   );
