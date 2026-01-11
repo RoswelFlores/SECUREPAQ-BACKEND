@@ -5,12 +5,6 @@ const notificacionService = require('./notificacion.service');
 const sendRecoverPasswordMail = async (to, password,id_usuario) => {
   try {
     
-       await notificacionService.registrarNotificacion(
-      'Recuperación de contraseña enviada al usuario',
-      id_usuario,
-      null,
-      'RECOVER_PASSWORD'
-      );
 
     console.log('[MAIL] Simulando envío de correo a:', to , 'con contraseña:', password);
     // await transporter.sendMail({
@@ -30,7 +24,26 @@ const sendRecoverPasswordMail = async (to, password,id_usuario) => {
   }
 };
 
-
+const sendUsuarioNuevoMail = async (to, password) => {
+  try {
+    console.log('[MAIL] Simulando envío de correo a:', to , 'con contraseña:', password);
+    // await transporter.sendMail({
+    //   from: `"SECUREPAQ" <${process.env.MAIL_USER}>`,
+    //   to,
+    //   subject: 'Bienvenido a SECUREPAQ',
+    //   html: `
+    //     <p>Estimado/a usuario,</p>
+    //     <p>Se ha creado su cuenta en SECUREPAQ.</p>
+    //     <p>Su contraseña temporal es:</p>
+    //     <p><strong>${password}</strong></p>
+    //     <p>Por favor cambie su contraseña al ingresar al sistema.</p>
+    //   `
+    // });
+  } catch (error) {
+    console.error('[MAIL] Error enviando correo:', error.message);
+    throw new Error('No fue posible enviar el correo');
+  }
+};
 
 const sendNuevaEncomiendaMail = async (idResidente, otp , idEncomienda) => {
   try {
@@ -177,5 +190,6 @@ module.exports = {
   sendNuevaEncomiendaMail,
   sendRetiroConfirmadoMail,
   sendRecordatorioMail,
-  sendRegenerarOtpMail
+  sendRegenerarOtpMail,
+  sendUsuarioNuevoMail
 };

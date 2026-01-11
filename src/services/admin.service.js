@@ -58,11 +58,11 @@ const crearUsuario = async (data) => {
     transactionActive = false;
 
     try {
-      await mailService.sendRecoverPasswordMail(
+      await mailService.sendUsuarioNuevoMail(
         data.email,
-        passwordTemporal,
-        idUsuario
+        passwordTemporal
       );
+      
     } catch (mailError) {
       console.error('[ADMIN] Error enviando correo:', mailError.message);
       throw new Error('Usuario creado, pero no se pudo enviar el correo de recuperacion.');
