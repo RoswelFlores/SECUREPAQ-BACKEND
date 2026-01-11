@@ -19,6 +19,20 @@ const findById = async (idResidente) => {
   return rows[0] || null;
 };
 
+const crear = async ({ nombre, rut, email, telefono, is_active, id_departamento }) => {
+  const [result] = await pool.execute(
+    `
+    INSERT INTO residente
+    (nombre, rut, email, telefono, activo, id_departamento)
+    VALUES (?, ?, ?, ?, ?, ?)
+    `,
+    [nombre, rut, email, telefono || null, is_active, id_departamento]
+  );
+
+  return result.insertId;
+};
+
 module.exports = {
-  findById
+  findById,
+  crear
 };

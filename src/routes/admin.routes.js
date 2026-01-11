@@ -18,4 +18,26 @@ router.get(
   adminController.getUsuarios
 );
 
+router.post(
+  '/usuarios',
+  verifyToken,
+  authorizeRoles('ADMIN'),
+  adminController.crearUsuario
+);
+
+router.put(
+  '/usuarios/:id',
+  verifyToken,
+  authorizeRoles('ADMIN'),
+  adminController.cambiarEstado
+);
+
+router.post(
+  '/usuarios/:id/reset-password',
+  verifyToken,
+  authorizeRoles('ADMIN'),
+  adminController.resetPassword
+);
+
+
 module.exports = router;

@@ -25,4 +25,34 @@ const getUsuarios = async (req, res) => {
   }
 };
 
-module.exports = { countAllUsers, getUsuarios };
+const crearUsuario = async (req, res) => {
+  try {
+    const result = await adminService.crearUsuario(req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+const cambiarEstado = async (req, res) => {
+  try {
+    const idUsuario = req.params.id;
+    const { activo } = req.body;  
+    await adminService.cambiarEstado(idUsuario, activo);
+    res.json({ message: 'Estado del usuario actualizado correctamente' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  } 
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const idUsuario = req.params.id;
+    await adminService.resetPassword(idUsuario);
+    res.json({ message: 'Contraseña reseteada correctamente' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+module.exports = { countAllUsers, getUsuarios, crearUsuario,cambiarEstado, resetPassword };
