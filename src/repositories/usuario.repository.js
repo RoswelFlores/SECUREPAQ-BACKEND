@@ -43,8 +43,36 @@ const countAllUsers = async () => {
   return rows[0] || null;
 };
 
+
+const findAll = async () => {
+  const [rows] = await pool.execute(
+    `
+    SELECT
+      u.id_usuario,
+      r.id_residente,
+      r.nombre,
+      r.rut,
+      r.telefono,
+      u.email,
+      ro.nombre_rol AS rol,
+      d.numero AS departamento,
+      u.activo
+    FROM usuario u
+    JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
+    JOIN rol ro ON ur.id_rol = ro.id_rol
+    LEFT JOIN residente r ON r.email = u.email
+    LEFT JOIN departamento d ON r.id_departamento = d.id_departamento
+    ORDER BY r.nombre
+    `
+  );
+
+  return rows;
+};
+
+
 module.exports = {
   findByEmailWithRoles,
   findByEmail,
-  countAllUsers
+  countAllUsers,
+  findAll
 };

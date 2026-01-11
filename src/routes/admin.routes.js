@@ -11,5 +11,11 @@ router.get(
   authorizeRoles('ADMIN'),
   adminController.countAllUsers
 );
+router.get(
+  '/usuarios',
+  verifyToken,
+  authorizeRoles('ADMIN'),
+  adminController.getUsuarios
+);
 
 module.exports = router;

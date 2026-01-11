@@ -1,10 +1,10 @@
-const usuarioRepositor = require('../repositories/usuario.repository');
+const usuarioRepository = require('../repositories/usuario.repository');
 
 const countAllUsers = async () => {
   try {
     console.log('[Admin] Cargando usuarios');
 
-    const totalUsers = await usuarioRepositor.countAllUsers();
+    const totalUsers = await usuarioRepository.countAllUsers();
 
     console.log('[Admin] Usuarios cargados con éxito');
     return totalUsers;
@@ -13,4 +13,16 @@ const countAllUsers = async () => {
     throw error;
   } 
 };
-module.exports = { countAllUsers };
+
+const listarUsuarios = async () => {
+  try {
+    console.log('[ADMIN] Listando usuarios');
+    return await usuarioRepository.findAll();
+  } catch (error) {
+    console.error('[ADMIN] Error listar usuarios:', error.message);
+    throw error;
+  }
+};
+
+
+module.exports = { countAllUsers, listarUsuarios };
