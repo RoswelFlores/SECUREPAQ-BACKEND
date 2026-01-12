@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const otpRepository = require('../repositories/otp.repository');
 const auditoriaService = require('./auditoria.service');
 const mailService = require('./mail.service');
+const residenteRepository = require('../repositories/residente.repository');
 
 const obtenerPendientes = async (idResidente) => {
   try {
@@ -68,8 +69,33 @@ const regenerarOtp = async (idResidente, idEncomienda) => {
   }
 };
 
+const listarNotificaciones = async (idUsuario) => {
+  try {
+    console.log('[RESIDENTE] Listando notificaciones usuario:', idUsuario);
+
+    const rows = await residenteRepository.listarNotificaciones(idUsuario);
+    console.log('[RESIDENTE] Notificaciones encontradas:', rows.length);
+    return rows.map(n => ({
+      id_notificacion: n.id_notificacion,
+      tipo: n.codigo_tipo,
+      titulo: n.titulo,
+      mensaje: n.mensaje,
+      tracking: n.tracking,
+      fecha_hora: n.fecha_envio,
+      leida: n.leida,
+      id_encomienda: n.id_encomienda
+    }));
+
+  } catch (error) {
+    console.error('[RESIDENTE] Error notificaciones:', error.message);
+    throw error;
+  }
+};
+
+
 module.exports = {
   obtenerPendientes,
   obtenerHistorial,
-  regenerarOtp
+  regenerarOtp,
+  listarNotificaciones
 };

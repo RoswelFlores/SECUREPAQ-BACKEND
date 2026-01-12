@@ -30,4 +30,11 @@ router.post(
   residenteController.regenerarOtp
 );
 
+router.get(
+  '/notificaciones',
+  verifyToken,
+  authorizeRoles('RESIDENTE'),
+  residenteController.getNotificaciones
+);
+
 module.exports = router;

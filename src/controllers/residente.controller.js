@@ -45,8 +45,20 @@ const regenerarOtp = async (req, res) => {
   }
 };
 
+
+const getNotificaciones = async (req, res) => {
+  try {
+    const idUsuario = req.user.id;
+    const data = await residenteService.listarNotificaciones(idUsuario);
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getPendientes,
   getHistorial,
-  regenerarOtp
+  regenerarOtp,
+  getNotificaciones
 };

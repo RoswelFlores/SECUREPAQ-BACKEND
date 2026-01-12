@@ -66,8 +66,29 @@ const actualizarPorEmail = async (emailActual, datosActualizados, connection) =>
   return result;
 };
 
+const listarNotificaciones = async (idUsuario, connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
+    `
+    SELECT 
+      id_notificacion,
+      mensaje,
+      leida,
+      fecha_envio
+    FROM notificacion
+    WHERE id_usuario = ?
+    ORDER BY fecha_envio DESC
+    `,
+    [idUsuario]
+  );
+
+  return rows;
+};
+
+
 module.exports = {
   findById,
   crear,
-  actualizarPorEmail
+  actualizarPorEmail,
+  listarNotificaciones
 };
