@@ -282,7 +282,29 @@ const listarAuditoria = async () => {
   }
 };
 
+const obtenerUsuarioResumen = async (idUsuario) => {
+  try {
+    console.log('[ADMIN] Buscando resumen usuario:', idUsuario);
+
+    const row = await usuarioRepository.findResumenById(idUsuario);
+    if (!row) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    return {
+      usuario: row.usuario,
+      rol: row.rol,
+      correo: row.email,
+      telefono: row.telefono
+    };
+  } catch (error) {
+    console.error('[ADMIN] Error resumen usuario:', error.message);
+    throw error;
+  }
+};
+
 
 module.exports = { countAllUsers, listarUsuarios, 
                   crearUsuario, cambiarEstado, resetPassword, 
-                  editarUsuario, guardarEstructura, listarAuditoria };
+                  editarUsuario, guardarEstructura, listarAuditoria,
+                  obtenerUsuarioResumen };

@@ -108,7 +108,18 @@ const getAuditoria = async (req, res) => {
   }
 };
 
+const getUsuarioResumen = async (req, res) => {
+  try {
+    const idUsuario = req.params.id;
+    const data = await adminService.obtenerUsuarioResumen(idUsuario);
+    return res.json(data);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 
 module.exports = { countAllUsers, getUsuarios,
                   crearUsuario,cambiarEstado, resetPassword, 
-                  editarUsuario, guardarEstructura , getAuditoria};
+                  editarUsuario, guardarEstructura , getAuditoria,
+                  getUsuarioResumen};

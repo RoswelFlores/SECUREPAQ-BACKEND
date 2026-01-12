@@ -207,6 +207,31 @@ const actualizarRolUsuario = async (idUsuario, rol, connection) => {
   }
 };
 
+const findResumenById = async (idUsuario, connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
+    `
+    SELECT
+      COALESCE(r.nombre, u.email) AS usuario,
+      u.email,
+      r.telefono,
+      ro.nombre_rol AS rol
+    FROM usuario u
+    LEFT JOIN residente r ON r.email = u.email
+    LEFT JOIN (
+      SELECT ur.id_usuario, MIN(ur.id_rol) AS id_rol
+      FROM usuario_rol ur
+      GROUP BY ur.id_usuario
+    ) ur ON ur.id_usuario = u.id_usuario
+    LEFT JOIN rol ro ON ro.id_rol = ur.id_rol
+    WHERE u.id_usuario = ? AND u.activo = true
+    `,
+    [idUsuario]
+  );
+
+  return rows[0] || null;
+};
+
 module.exports = {
   findByEmailWithRoles,
   findByEmail,
@@ -214,5 +239,5 @@ module.exports = {
   findAll,asignarRol,
   crearUsuario,actualizarUsuario,
   findById,actualizarPassword,editarUsuario,
-  actualizarUsuarioDatos,actualizarRolUsuario
+  actualizarUsuarioDatos,actualizarRolUsuario,findResumenById
 };

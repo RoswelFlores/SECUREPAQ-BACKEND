@@ -18,6 +18,13 @@ router.get(
   adminController.getUsuarios
 );
 
+router.get(
+  '/usuarios/:id/resumen',
+  verifyToken,
+  authorizeRoles('ADMIN','CONSERJERIA','RESIDENTE'),
+  adminController.getUsuarioResumen
+);
+
 router.post(
   '/usuarios',
   verifyToken,
