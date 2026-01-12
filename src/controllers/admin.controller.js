@@ -99,7 +99,16 @@ const guardarEstructura = async (req, res) => {
   }
 };
 
+const getAuditoria = async (req, res) => {
+  try {
+    const data = await adminService.listarAuditoria();
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 
 module.exports = { countAllUsers, getUsuarios,
                   crearUsuario,cambiarEstado, resetPassword, 
-                  editarUsuario, guardarEstructura };
+                  editarUsuario, guardarEstructura , getAuditoria};

@@ -54,5 +54,12 @@ router.put(
   adminController.guardarEstructura
 );
 
+router.get(
+  '/auditoria',
+  verifyToken,
+  authorizeRoles('ADMIN'),
+  adminController.getAuditoria
+);
+
 
 module.exports = router;

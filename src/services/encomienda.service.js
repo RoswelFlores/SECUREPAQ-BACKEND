@@ -74,8 +74,9 @@ const confirmarRetiro = async (idEncomienda, observacion, usuario) => {
     
     await otpRepository.marcarComoUsado(otp.id_otp);
 
+    observacion = observacion || '';
 
-    await encomiendaRepository.actualizarEstado(idEncomienda, 'RETIRADA');
+    await encomiendaRepository.actualizarEstado(idEncomienda,observacion, 'RETIRADA');
 
   
     await auditoriaService.registrar(

@@ -5,6 +5,7 @@ const pool = require('../config/db');
 const bcrypt = require('bcrypt');
 const edificioRepo = require('../repositories/edificio.repository');
 const deptoRepo = require('../repositories/departamento.repository');
+const auditoriaRepository = require('../repositories/auditoria.repository');
 
 const countAllUsers = async () => {
   try {
@@ -260,6 +261,28 @@ const guardarEstructura = async (edificio, departamentos) => {
 };
 
 
+const listarAuditoria = async () => {
+  try {
+    console.log('[ADMIN] Listando auditoría');
+
+    const rows = await auditoriaRepository.findAll();
+
+    
+    return rows.map(r => ({
+      fecha_hora: r.fecha_evento,
+      usuario: r.usuario_nombre,
+      rol: r.rol,
+      accion: r.accion,
+      detalle: r.detalle
+    }));
+
+  } catch (error) {
+    console.error('[ADMIN] Error auditoría:', error.message);
+    throw error;
+  }
+};
+
+
 module.exports = { countAllUsers, listarUsuarios, 
                   crearUsuario, cambiarEstado, resetPassword, 
-                  editarUsuario, guardarEstructura };
+                  editarUsuario, guardarEstructura, listarAuditoria };

@@ -21,10 +21,10 @@ const insertar = async (data) => {
   return result.insertId;
 };
 
-const actualizarEstado = async (idEncomienda, estado) => {
+const actualizarEstado = async (idEncomienda, observacion, estado) => {
   await pool.execute(
-    'UPDATE encomienda SET estado = ? WHERE id_encomienda = ?',
-    [estado, idEncomienda]
+    'UPDATE encomienda SET estado = ?, observacion = ? WHERE id_encomienda = ?',
+    [estado, observacion, idEncomienda]
   );
 };
 
