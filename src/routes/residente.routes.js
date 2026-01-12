@@ -37,4 +37,11 @@ router.get(
   residenteController.getNotificaciones
 );
 
+router.post(
+  '/notificaciones/marcar-como-leida',
+  verifyToken,
+  authorizeRoles('RESIDENTE'),
+  residenteController.marcarNotificacionComoLeida
+);
+
 module.exports = router;

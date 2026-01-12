@@ -26,7 +26,15 @@ const existeRecordatorio = async (idEncomienda, idTipoNotificacion) => {
   return rows.length > 0;
 };
 
+const marcarComoLeida = async (idNotificacion) => {
+  await pool.execute(
+    'UPDATE notificacion SET leida = true WHERE id_notificacion = ?',
+    [idNotificacion]
+  );
+};
+
 module.exports = {
   insertar,
-  existeRecordatorio
+  existeRecordatorio,
+  marcarComoLeida
 };

@@ -4,6 +4,7 @@ const otpRepository = require('../repositories/otp.repository');
 const auditoriaService = require('./auditoria.service');
 const mailService = require('./mail.service');
 const residenteRepository = require('../repositories/residente.repository');
+const notificacionRepository = require('../repositories/notificacion.repository');
 
 const obtenerPendientes = async (idResidente) => {
   try {
@@ -92,10 +93,21 @@ const listarNotificaciones = async (idUsuario) => {
   }
 };
 
+const marcarNotificacionComoLeida = async (idNotificacion) => {
+  try {
+    console.log('[RESIDENTE] Marcando notificación como leída:', idNotificacion);
+
+    await notificacionRepository.marcarComoLeida(idNotificacion);
+  } catch (error) {
+    console.error('[RESIDENTE] Error marcar notificación como leída:', error.message);
+    throw error;
+  }
+};
 
 module.exports = {
   obtenerPendientes,
   obtenerHistorial,
   regenerarOtp,
-  listarNotificaciones
+  listarNotificaciones,
+  marcarNotificacionComoLeida
 };

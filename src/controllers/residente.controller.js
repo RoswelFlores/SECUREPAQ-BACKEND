@@ -56,9 +56,21 @@ const getNotificaciones = async (req, res) => {
   }
 };
 
+const marcarNotificacionComoLeida = async (req, res) => {
+  try {
+    const { id_notificacion } = req.body;
+
+    await residenteService.marcarNotificacionComoLeida(id_notificacion);
+    return res.json({ message: 'Notificación marcada como leída' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getPendientes,
   getHistorial,
   regenerarOtp,
-  getNotificaciones
+  getNotificaciones,
+  marcarNotificacionComoLeida
 };
