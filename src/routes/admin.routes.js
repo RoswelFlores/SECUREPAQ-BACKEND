@@ -46,4 +46,13 @@ router.put(
   adminController.editarUsuario
 );
 
+
+router.put(
+  '/estructura',
+  verifyToken,
+  authorizeRoles('ADMIN'),
+  adminController.guardarEstructura
+);
+
+
 module.exports = router;

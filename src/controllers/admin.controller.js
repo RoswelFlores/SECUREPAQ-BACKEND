@@ -82,4 +82,24 @@ const editarUsuario = async (req, res) => {
     });
   }
 };
-module.exports = { countAllUsers, getUsuarios, crearUsuario,cambiarEstado, resetPassword, editarUsuario };
+
+const guardarEstructura = async (req, res) => {
+  try {
+    const { edificio, departamentos } = req.body;
+
+    if (!edificio || !Array.isArray(departamentos)) {
+      return res.status(400).json({ error: 'Payload inválido' });
+    }
+
+    const result = await adminService.guardarEstructura(edificio, departamentos);
+    return res.json(result);
+
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+
+module.exports = { countAllUsers, getUsuarios,
+                  crearUsuario,cambiarEstado, resetPassword, 
+                  editarUsuario, guardarEstructura };

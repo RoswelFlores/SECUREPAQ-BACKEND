@@ -3,7 +3,8 @@ const residenteRepository = require('../repositories/residente.repository');
 const mailService = require('./mail.service');  
 const pool = require('../config/db');
 const bcrypt = require('bcrypt');
-
+const edificioRepo = require('../repositories/edificio.repository');
+const deptoRepo = require('../repositories/departamento.repository');
 
 const countAllUsers = async () => {
   try {
@@ -207,4 +208,58 @@ const editarUsuario = async (idUsuario, data) => {
   }
 };
 
-module.exports = { countAllUsers, listarUsuarios, crearUsuario, cambiarEstado, resetPassword, editarUsuario };
+const guardarEstructura = async (edificio, departamentos) => {
+  const conn = await pool.getConnection();
+  try {
+    console.log('[ADMIN] Guardando estructura edificio + departamentos');
+    await conn.beginTransaction();
+
+    
+    const idEdificio = await edificioRepo.upsert(conn, edificio);
+
+
+    for (const d of departamentos) {
+      if (!d.numero || d.piso === undefined || d.piso === null) {
+        throw new Error('Datos de departamento incompletos');
+      }
+
+      if (d.id_departamento) {
+        const result = await deptoRepo.update(conn, {
+          id_departamento: d.id_departamento,
+          numero: d.numero,
+          piso: d.piso,
+          id_edificio: idEdificio
+        });
+        if (result.affectedRows === 0) {
+          await deptoRepo.insert(conn, {
+            numero: d.numero,
+            piso: d.piso,
+            id_edificio: idEdificio
+          });
+        }
+      } else {
+        await deptoRepo.insert(conn, {
+          numero: d.numero,
+          piso: d.piso,
+          id_edificio: idEdificio
+        });
+      }
+    }
+
+    await conn.commit();
+    console.log('[ADMIN] Estructura guardada OK');
+    return { message: 'Estructura guardada correctamente' };
+
+  } catch (error) {
+    await conn.rollback();
+    console.error('[ADMIN] Error guardar estructura:', error.message);
+    throw error;
+  } finally {
+    conn.release();
+  }
+};
+
+
+module.exports = { countAllUsers, listarUsuarios, 
+                  crearUsuario, cambiarEstado, resetPassword, 
+                  editarUsuario, guardarEstructura };
