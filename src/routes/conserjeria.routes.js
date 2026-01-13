@@ -19,4 +19,25 @@ router.get(
   conserjeriaController.obtenerListado
 );
 
+router.get(
+  '/residentes',
+  verifyToken,
+  authorizeRoles('CONSERJERIA', 'ADMIN'),
+  conserjeriaController.buscarResidentes
+);
+
+router.get(
+  '/residentes-lista',
+  verifyToken,
+  authorizeRoles('CONSERJERIA', 'ADMIN'),
+  conserjeriaController.listarResidentesConDepartamento
+);
+
+router.get(
+  '/couriers',
+  verifyToken,
+  authorizeRoles('CONSERJERIA', 'ADMIN'),
+  conserjeriaController.listarCouriers
+);
+
 module.exports = router;

@@ -104,10 +104,62 @@ const findByEmail = async (email, connection) => {
   return rows[0] || null;
 };
 
+const listarConDepartamento = async (connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
+    `
+    SELECT
+      r.id_residente,
+      r.nombre,
+      r.rut,
+      r.email,
+      d.numero AS departamento
+    FROM residente r
+    INNER JOIN departamento d ON r.id_departamento = d.id_departamento
+    WHERE r.activo = true
+      AND r.id_departamento IS NOT NULL
+    ORDER BY r.nombre ASC
+    `
+  );
+
+  return rows;
+};
+
+const buscar = async (query, limit = 10, connection) => {
+  const executor = getExecutor(connection);
+  const term = `%${query}%`;
+  const [rows] = await executor.execute(
+    `
+    SELECT
+      r.id_residente,
+      r.nombre,
+      r.rut,
+      r.email,
+      d.numero AS departamento
+    FROM residente r
+    INNER JOIN departamento d ON r.id_departamento = d.id_departamento
+    WHERE r.activo = true
+      AND (
+        r.nombre LIKE ?
+        OR r.rut LIKE ?
+        OR r.email LIKE ?
+        OR d.numero LIKE ?
+      )
+    ORDER BY r.nombre ASC
+    LIMIT ?
+    `,
+    [term, term, term, term, Number(limit)]
+  );
+
+  return rows;
+};
+
 module.exports = {
   findById,
   crear,
   actualizarPorEmail,
   listarNotificaciones,
-  findByEmail
+  findByEmail,
+  listarConDepartamento,
+  buscar
 };
