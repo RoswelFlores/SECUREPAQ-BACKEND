@@ -52,10 +52,13 @@ const findDetalleById = async (idEncomienda) => {
     `
     SELECT 
       e.id_encomienda,
+      e.tracking,
       e.descripcion,
       c.nombre AS courier,
       r.nombre AS residente,
-      d.numero AS departamento
+      d.numero AS departamento,
+      e.fecha_recepcion,
+      e.estado
     FROM encomienda e
     JOIN courier c ON e.id_courier = c.id_courier
     JOIN residente r ON e.id_residente = r.id_residente
