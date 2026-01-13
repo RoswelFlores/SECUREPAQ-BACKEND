@@ -7,6 +7,11 @@ const edificioRepo = require('../repositories/edificio.repository');
 const deptoRepo = require('../repositories/departamento.repository');
 const auditoriaRepository = require('../repositories/auditoria.repository');
 
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const isValidTelefono = (telefono) => /^\+?[0-9]{8,15}$/.test(telefono);
+const isStrongPassword = (password) =>
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+
 const countAllUsers = async () => {
   try {
     console.log('[Admin] Cargando usuarios');
@@ -261,6 +266,106 @@ const guardarEstructura = async (edificio, departamentos) => {
 };
 
 
+const actualizarUsuarioPerfil = async (idUsuario, data) => {
+  const connection = await pool.getConnection();
+  let transactionActive = false;
+  try {
+    const usuarioActual = await usuarioRepository.findById(idUsuario, connection);
+    if (!usuarioActual) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    const email = data.email;
+    const telefono = data.telefono;
+    const passwordNueva = data.password_nueva;
+    const passwordConfirmacion = data.password_confirmacion;
+
+    if (!email || typeof email !== 'string') {
+      throw new Error('Email invalido');
+    }
+    const emailNormalizado = email.trim().toLowerCase();
+    if (!isValidEmail(emailNormalizado)) {
+      throw new Error('Email invalido');
+    }
+
+    if (telefono === undefined || typeof telefono !== 'string') {
+      throw new Error('Telefono invalido');
+    }
+    let telefonoNormalizado = telefono.trim();
+    if (telefonoNormalizado !== '' && !isValidTelefono(telefonoNormalizado)) {
+      throw new Error('Telefono invalido');
+    }
+    if (telefonoNormalizado === '') {
+      telefonoNormalizado = null;
+    }
+
+    if (emailNormalizado !== usuarioActual.email) {
+      const existente = await usuarioRepository.findByEmail(emailNormalizado, connection);
+      if (existente && existente.id_usuario !== Number(idUsuario)) {
+        throw new Error('El correo ya esta registrado');
+      }
+    }
+
+    const passwordProvided =
+      passwordNueva !== undefined || passwordConfirmacion !== undefined;
+
+    if (passwordProvided) {
+      if (!passwordNueva || !passwordConfirmacion) {
+        throw new Error('Datos de password incompletos');
+      }
+      if (passwordNueva !== passwordConfirmacion) {
+        throw new Error('Las contrasenas no coinciden');
+      }
+      if (!isStrongPassword(passwordNueva)) {
+        throw new Error('Contrasena debil');
+      }
+    }
+
+    const residenteActual = await residenteRepository.findByEmail(
+      usuarioActual.email,
+      connection
+    );
+    if (!residenteActual) {
+      throw new Error('Residente no encontrado');
+    }
+
+    await connection.beginTransaction();
+    transactionActive = true;
+
+    if (emailNormalizado !== usuarioActual.email) {
+      await usuarioRepository.actualizarUsuarioDatos(
+        idUsuario,
+        { email: emailNormalizado },
+        connection
+      );
+    }
+
+    await residenteRepository.actualizarPorEmail(
+      usuarioActual.email,
+      { email: emailNormalizado, telefono: telefonoNormalizado },
+      connection
+    );
+
+    if (passwordProvided) {
+      const hash = await bcrypt.hash(passwordNueva, 10);
+      await usuarioRepository.actualizarPassword(idUsuario, hash, connection);
+    }
+
+    await connection.commit();
+    transactionActive = false;
+
+    return { message: 'Usuario actualizado correctamente' };
+  } catch (error) {
+    if (transactionActive) {
+      await connection.rollback();
+    }
+    console.error('[ADMIN] Error actualizar perfil usuario:', error.message);
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 const listarAuditoria = async () => {
   try {
     console.log('[ADMIN] Listando auditoría');
@@ -307,4 +412,4 @@ const obtenerUsuarioResumen = async (idUsuario) => {
 module.exports = { countAllUsers, listarUsuarios, 
                   crearUsuario, cambiarEstado, resetPassword, 
                   editarUsuario, guardarEstructura, listarAuditoria,
-                  obtenerUsuarioResumen };
+                  obtenerUsuarioResumen, actualizarUsuarioPerfil };

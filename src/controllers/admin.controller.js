@@ -99,6 +99,16 @@ const guardarEstructura = async (req, res) => {
   }
 };
 
+const editarUsuarioPerfil = async (req, res) => {
+  try {
+    const idUsuario = req.params.id;
+    const result = await adminService.actualizarUsuarioPerfil(idUsuario, req.body);
+    return res.json(result);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 const getAuditoria = async (req, res) => {
   try {
     const data = await adminService.listarAuditoria();
@@ -122,4 +132,4 @@ const getUsuarioResumen = async (req, res) => {
 module.exports = { countAllUsers, getUsuarios,
                   crearUsuario,cambiarEstado, resetPassword, 
                   editarUsuario, guardarEstructura , getAuditoria,
-                  getUsuarioResumen};
+                  getUsuarioResumen, editarUsuarioPerfil};

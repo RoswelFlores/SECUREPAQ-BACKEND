@@ -85,10 +85,29 @@ const listarNotificaciones = async (idUsuario, connection) => {
   return rows;
 };
 
+const findByEmail = async (email, connection) => {
+  const executor = getExecutor(connection);
+  const [rows] = await executor.execute(
+    `
+    SELECT
+      id_residente,
+      nombre,
+      rut,
+      email,
+      telefono
+    FROM residente
+    WHERE email = ?
+    `,
+    [email]
+  );
+
+  return rows[0] || null;
+};
 
 module.exports = {
   findById,
   crear,
   actualizarPorEmail,
-  listarNotificaciones
+  listarNotificaciones,
+  findByEmail
 };

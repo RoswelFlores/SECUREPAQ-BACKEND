@@ -33,6 +33,13 @@ router.post(
 );
 
 router.put(
+  '/usuarios/:id/perfil',
+  verifyToken,
+  authorizeRoles('ADMIN','CONSERJERIA','RESIDENTE'),
+  adminController.editarUsuarioPerfil
+);
+
+router.put(
   '/usuarios/:id',
   verifyToken,
   authorizeRoles('ADMIN'),
