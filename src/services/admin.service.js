@@ -1,4 +1,4 @@
-const usuarioRepository = require('../repositories/usuario.repository');
+﻿const usuarioRepository = require('../repositories/usuario.repository');
 const residenteRepository = require('../repositories/residente.repository');
 const mailService = require('./mail.service');  
 const pool = require('../config/db');
@@ -18,7 +18,7 @@ const countAllUsers = async () => {
 
     const totalUsers = await usuarioRepository.countAllUsers();
 
-    console.log('[Admin] Usuarios cargados con éxito');
+    console.log('[Admin] Usuarios cargados con Ã©xito');
     return totalUsers;
   } catch (error) {
     console.error('[Admin] Error al cargar usuarios:', error.message);
@@ -57,7 +57,7 @@ const crearUsuario = async (data) => {
       rut: data.rut,
       telefono: data.telefono,
       email: data.email,
-      is_active : !id_departamento,
+      is_active : true,
       id_departamento: id_departamento
     }, connection);
 
@@ -135,7 +135,7 @@ const resetPassword = async (idUsuario) => {
       throw new Error('Contrasena actualizada, pero no se pudo enviar el correo de recuperacion.');
     }
 
-    return { message: 'Contraseña reseteada' };
+    return { message: 'ContraseÃ±a reseteada' };
 
   } catch (error) {
     throw error;
@@ -409,7 +409,7 @@ const actualizarUsuarioPerfil = async (idUsuario, data) => {
 
 const listarAuditoria = async () => {
   try {
-    console.log('[ADMIN] Listando auditoría');
+    console.log('[ADMIN] Listando auditorÃ­a');
 
     const rows = await auditoriaRepository.findAll();
 
@@ -423,7 +423,7 @@ const listarAuditoria = async () => {
     }));
 
   } catch (error) {
-    console.error('[ADMIN] Error auditoría:', error.message);
+    console.error('[ADMIN] Error auditorÃ­a:', error.message);
     throw error;
   }
 };
@@ -454,3 +454,4 @@ module.exports = { countAllUsers, listarUsuarios,
                   crearUsuario, cambiarEstado, resetPassword, 
                   editarUsuario, guardarEstructura, obtenerEstructura, listarDepartamentos, listarAuditoria,
                   obtenerUsuarioResumen, actualizarUsuarioPerfil };
+
