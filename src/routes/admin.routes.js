@@ -69,6 +69,13 @@ router.put(
 );
 
 router.get(
+  '/estructura',
+  verifyToken,
+  authorizeRoles('ADMIN'),
+  adminController.getEstructura
+);
+
+router.get(
   '/auditoria',
   verifyToken,
   authorizeRoles('ADMIN'),

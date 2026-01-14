@@ -21,9 +21,47 @@ const update = async (conn, d) => {
   return result;
 };
 
+const listByEdificio = async (conn, idEdificio) => {
+  const [rows] = await conn.execute(
+    `
+    SELECT id_departamento, numero, piso
+    FROM departamento
+    WHERE id_edificio = ?
+    ORDER BY piso ASC, numero ASC
+    `,
+    [idEdificio]
+  );
+
+  return rows;
+};
+
+const deleteByEdificio = async (conn, idEdificio) => {
+  await conn.execute(
+    'DELETE FROM departamento WHERE id_edificio = ?',
+    [idEdificio]
+  );
+};
+
+const deleteIfNoResidente = async (conn, idDepartamento) => {
+  const [result] = await conn.execute(
+    `
+    DELETE FROM departamento
+    WHERE id_departamento = ?
+      AND NOT EXISTS (
+        SELECT 1 FROM residente WHERE id_departamento = ?
+      )
+    `,
+    [idDepartamento, idDepartamento]
+  );
+
+  return result;
+};
 
 
 module.exports = {
   insert,
-  update
+  update,
+  listByEdificio,
+  deleteByEdificio,
+  deleteIfNoResidente
 };

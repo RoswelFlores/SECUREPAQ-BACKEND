@@ -224,25 +224,37 @@ const guardarEstructura = async (edificio, departamentos) => {
     const idEdificio = await edificioRepo.upsert(conn, edificio);
 
 
+    const existentes = await deptoRepo.listByEdificio(conn, idEdificio);
+    const incomingIds = new Set(
+      departamentos
+        .map((d) => d.id_departamento)
+        .filter((id) => id !== undefined && id !== null)
+    );
+
+    for (const existente of existentes) {
+      if (!incomingIds.has(existente.id_departamento)) {
+        const result = await deptoRepo.deleteIfNoResidente(
+          conn,
+          existente.id_departamento
+        );
+        if (result.affectedRows === 0) {
+          throw new Error('No se puede eliminar un departamento asignado a un residente');
+        }
+      }
+    }
+
     for (const d of departamentos) {
       if (!d.numero || d.piso === undefined || d.piso === null) {
         throw new Error('Datos de departamento incompletos');
       }
 
       if (d.id_departamento) {
-        const result = await deptoRepo.update(conn, {
+        await deptoRepo.update(conn, {
           id_departamento: d.id_departamento,
           numero: d.numero,
           piso: d.piso,
           id_edificio: idEdificio
         });
-        if (result.affectedRows === 0) {
-          await deptoRepo.insert(conn, {
-            numero: d.numero,
-            piso: d.piso,
-            id_edificio: idEdificio
-          });
-        }
       } else {
         await deptoRepo.insert(conn, {
           numero: d.numero,
@@ -265,6 +277,20 @@ const guardarEstructura = async (edificio, departamentos) => {
   }
 };
 
+const obtenerEstructura = async () => {
+  try {
+    const edificio = await edificioRepo.findFirst();
+    if (!edificio) {
+      return { edificio: null, departamentos: [] };
+    }
+
+    const departamentos = await deptoRepo.listByEdificio(pool, edificio.id_edificio);
+    return { edificio, departamentos };
+  } catch (error) {
+    console.error('[ADMIN] Error obtener estructura:', error.message);
+    throw error;
+  }
+};
 
 const actualizarUsuarioPerfil = async (idUsuario, data) => {
   const connection = await pool.getConnection();
@@ -411,5 +437,5 @@ const obtenerUsuarioResumen = async (idUsuario) => {
 
 module.exports = { countAllUsers, listarUsuarios, 
                   crearUsuario, cambiarEstado, resetPassword, 
-                  editarUsuario, guardarEstructura, listarAuditoria,
+                  editarUsuario, guardarEstructura, obtenerEstructura, listarAuditoria,
                   obtenerUsuarioResumen, actualizarUsuarioPerfil };

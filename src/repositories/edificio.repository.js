@@ -24,4 +24,19 @@ const upsert = async (conn, e) => {
   }
 };
 
-module.exports = { upsert };
+const pool = require('../config/db');
+
+const findFirst = async (conn) => {
+  const executor = conn || pool;
+  const [rows] = await executor.execute(
+    `
+    SELECT id_edificio, nombre, direccion, comuna, ciudad
+    FROM edificio
+    LIMIT 1
+    `
+  );
+
+  return rows[0] || null;
+};
+
+module.exports = { upsert, findFirst };

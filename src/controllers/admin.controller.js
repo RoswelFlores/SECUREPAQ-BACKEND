@@ -118,6 +118,15 @@ const getAuditoria = async (req, res) => {
   }
 };
 
+const getEstructura = async (req, res) => {
+  try {
+    const data = await adminService.obtenerEstructura();
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 const getUsuarioResumen = async (req, res) => {
   try {
     const idUsuario = req.params.id;
@@ -132,4 +141,5 @@ const getUsuarioResumen = async (req, res) => {
 module.exports = { countAllUsers, getUsuarios,
                   crearUsuario,cambiarEstado, resetPassword, 
                   editarUsuario, guardarEstructura , getAuditoria,
-                  getUsuarioResumen, editarUsuarioPerfil};
+                  getUsuarioResumen, editarUsuarioPerfil,
+                  getEstructura};
