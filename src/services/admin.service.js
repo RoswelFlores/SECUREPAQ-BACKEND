@@ -292,6 +292,21 @@ const obtenerEstructura = async () => {
   }
 };
 
+const listarDepartamentos = async () => {
+  try {
+    const edificio = await edificioRepo.findFirst();
+    if (!edificio) {
+      return { edificio: null, departamentos: [] };
+    }
+
+    const departamentos = await deptoRepo.listByEdificio(pool, edificio.id_edificio);
+    return { edificio, departamentos };
+  } catch (error) {
+    console.error('[ADMIN] Error listar departamentos:', error.message);
+    throw error;
+  }
+};
+
 const actualizarUsuarioPerfil = async (idUsuario, data) => {
   const connection = await pool.getConnection();
   let transactionActive = false;
@@ -437,5 +452,5 @@ const obtenerUsuarioResumen = async (idUsuario) => {
 
 module.exports = { countAllUsers, listarUsuarios, 
                   crearUsuario, cambiarEstado, resetPassword, 
-                  editarUsuario, guardarEstructura, obtenerEstructura, listarAuditoria,
+                  editarUsuario, guardarEstructura, obtenerEstructura, listarDepartamentos, listarAuditoria,
                   obtenerUsuarioResumen, actualizarUsuarioPerfil };

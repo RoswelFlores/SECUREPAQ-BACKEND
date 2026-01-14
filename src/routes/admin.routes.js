@@ -76,6 +76,13 @@ router.get(
 );
 
 router.get(
+  '/departamentos',
+  verifyToken,
+  authorizeRoles('ADMIN'),
+  adminController.getDepartamentos
+);
+
+router.get(
   '/auditoria',
   verifyToken,
   authorizeRoles('ADMIN'),
