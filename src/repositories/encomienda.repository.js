@@ -164,6 +164,7 @@ const findHistorialByResidente = async (idResidente) => {
       c.nombre AS courier,
       e.tracking,
       e.fecha_recepcion,
+      e.observacion,
       a.fecha_evento AS fecha_retiro
     FROM encomienda e
     JOIN courier c ON e.id_courier = c.id_courier
