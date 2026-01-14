@@ -18,10 +18,13 @@ const findAll = async () => {
       a.fecha_evento,
 
       -- Nombre visible del usuario
-      COALESCE(r_admin.nombre, u.email, a.usuario_sistema) AS usuario_nombre,
+      COALESCE(r_actor.nombre, r_admin.nombre, u.email, a.usuario_sistema) AS usuario_nombre,
 
       -- Rol principal (uno solo)
-      COALESCE(ro.nombre_rol, 'SIN_ROL') AS rol,
+      CASE
+        WHEN a.usuario_sistema LIKE 'residente:%' THEN 'RESIDENTE'
+        ELSE COALESCE(ro.nombre_rol, 'SIN_ROL')
+      END AS rol,
 
       a.accion,
 
@@ -85,7 +88,15 @@ const findAll = async () => {
     LEFT JOIN departamento d 
       ON d.id_departamento = r_pkg.id_departamento
 
-    -- Si el usuario ES residente, sacamos nombre
+    -- Si el usuario ES residente (ej: residente:2)
+    LEFT JOIN residente r_actor
+      ON r_actor.id_residente = CASE
+        WHEN a.usuario_sistema LIKE 'residente:%'
+          THEN CAST(SUBSTRING_INDEX(a.usuario_sistema, ':', -1) AS UNSIGNED)
+        ELSE NULL
+      END
+
+    -- Si el usuario existe como email
     LEFT JOIN residente r_admin 
       ON r_admin.email = u.email
 
