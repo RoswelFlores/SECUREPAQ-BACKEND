@@ -1,4 +1,4 @@
-const otpRepository = require('../repositories/otp.repository');
+﻿const otpRepository = require('../repositories/otp.repository');
 const { generarOTP } = require('../utils/otp.util');
 const encomiendaRepository = require('../repositories/encomienda.repository');
 const auditoriaService = require('./auditoria.service');
@@ -35,10 +35,19 @@ const validarOTP = async (codigo) => {
   try {
     console.log('[RETIRO] Validando OTP');
 
-    const otp = await otpRepository.findByCodigoValido(codigo);
+    const otp = await otpRepository.findByCodigo(codigo);
 
     if (!otp) {
-      throw new Error('OTP inválido o expirado');
+      throw new Error('OTP incorrecto');
+    }
+
+    if (otp.usado) {
+      throw new Error('OTP expirado');
+    }
+
+    const expiracion = new Date(otp.fecha_expiracion);
+    if (Number.isNaN(expiracion.getTime()) || expiracion <= new Date()) {
+      throw new Error('OTP expirado');
     }
 
     const detalle = await encomiendaRepository.findDetalleById(otp.id_encomienda);
@@ -58,3 +67,4 @@ module.exports = {
   generarYGuardarOTP,
   validarOTP
 };
+

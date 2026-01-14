@@ -26,6 +26,21 @@ const findByCodigoValido = async (codigo) => {
   return rows[0] || null;
 };
 
+const findByCodigo = async (codigo) => {
+  const [rows] = await pool.execute(
+    `
+    SELECT *
+    FROM otp_encomienda
+    WHERE codigo = ?
+    ORDER BY id_otp DESC
+    LIMIT 1
+    `,
+    [codigo]
+  );
+
+  return rows[0] || null;
+};
+
 const marcarComoUsado = async (idOtp) => {
   await pool.execute(
     'UPDATE otp_encomienda SET usado = true WHERE id_otp = ?',
@@ -74,6 +89,7 @@ const updateOtpByEconmienda = async (idEncomienda, codigo, fechaExpiracion) => {
 
 module.exports = {
   insertar, findByCodigoValido,
+  findByCodigo,
   marcarComoUsado,findByCodigoValidoPorEncomienda,
   marcarPorEncomiendaComoUsado,
   updateOtpByEconmienda
