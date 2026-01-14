@@ -61,10 +61,14 @@ const recoverPassword = async (email) => {
       throw new Error('El correo no está registrado');
     }
 
+    const nuevaPassword = Math.random().toString(36).slice(-8);
+    const hash = await bcrypt.hash(nuevaPassword, 10);
+    await usuarioRepository.actualizarPassword(usuario.id_usuario, hash);
+
     await mailService.sendRecoverPasswordMail(
       usuario.email,
-      usuario.password 
-      ,usuario.id_usuario
+      nuevaPassword,
+      usuario.id_usuario
     );
 
     console.log('[AUTH] Correo de recuperación enviado a usuario ID:', usuario.id_usuario);
