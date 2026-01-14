@@ -18,10 +18,10 @@ const findAll = async () => {
       a.fecha_evento,
 
       -- Nombre visible del usuario
-      COALESCE(r_admin.nombre, u.email) AS usuario_nombre,
+      COALESCE(r_admin.nombre, u.email, a.usuario_sistema) AS usuario_nombre,
 
       -- Rol principal (uno solo)
-      ro.nombre_rol AS rol,
+      COALESCE(ro.nombre_rol, 'SIN_ROL') AS rol,
 
       a.accion,
 
@@ -30,27 +30,30 @@ const findAll = async () => {
         WHEN 'REGISTRO_ENCOMIENDA' THEN
           CONCAT(
             'Registro encomienda ',
-            c.nombre,
+            COALESCE(c.nombre, 'Courier'),
             ' - ',
-            r_pkg.nombre,
+            COALESCE(r_pkg.nombre, 'Residente'),
             ' (',
-            d.numero,
+            COALESCE(d.numero, 'Sin depto'),
             ')'
           )
         WHEN 'RETIRO_ENCOMIENDA' THEN
-          CONCAT(
-            'Retiro encomienda #',
-            e.tracking,
-            ' - ',
-            r_pkg.nombre,
-            ' (',
-            d.numero,
-            ')'
+          COALESCE(
+            NULLIF(e.observacion, ''),
+            CONCAT(
+              'Retiro encomienda #',
+              COALESCE(e.tracking, 'N/A'),
+              ' - ',
+              COALESCE(r_pkg.nombre, 'Residente'),
+              ' (',
+              COALESCE(d.numero, 'Sin depto'),
+              ')'
+            )
           )
         WHEN 'REGENERAR_OTP' THEN
           CONCAT(
             'Regeneración OTP encomienda #',
-            e.tracking
+            COALESCE(e.tracking, 'N/A')
           )
         ELSE
           'Acción del sistema'
@@ -59,7 +62,7 @@ const findAll = async () => {
     FROM auditoria_encomienda a
 
     -- Usuario que ejecutó la acción
-    JOIN usuario u 
+    LEFT JOIN usuario u 
       ON u.email = a.usuario_sistema
 
     -- UN SOLO rol (el primero / principal)
