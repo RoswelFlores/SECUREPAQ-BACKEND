@@ -4,6 +4,50 @@ const otpService = require('./otp.service');
 const otpRepository = require('../repositories/otp.repository');
 const mailService = require('./mail.service');
 
+const formatUtcDateTime = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+};
+
+const buildFechaHoraRecepcion = ({
+  fecha_recepcion,
+  hora_recepcion,
+  fecha_recepcion_utc,
+  timezone_offset
+}) => {
+  if (fecha_recepcion_utc) {
+    const parsed = new Date(fecha_recepcion_utc);
+    const formatted = formatUtcDateTime(parsed);
+    if (formatted) return formatted;
+  }
+
+  const hasOffset =
+    timezone_offset !== undefined &&
+    timezone_offset !== null &&
+    timezone_offset !== '';
+  const offsetMinutes = hasOffset ? Number(timezone_offset) : NaN;
+  if (Number.isFinite(offsetMinutes) && fecha_recepcion && hora_recepcion) {
+    const [year, month, day] = String(fecha_recepcion).split('-').map(Number);
+    const [hourRaw, minuteRaw, secondRaw = '0'] = String(hora_recepcion).split(':');
+    const hour = Number(hourRaw);
+    const minute = Number(minuteRaw);
+    const second = Number(secondRaw);
+
+    if (![year, month, day, hour, minute, second].some(Number.isNaN)) {
+      const utcMs = Date.UTC(year, month - 1, day, hour, minute, second)
+        + offsetMinutes * 60 * 1000;
+      const formatted = formatUtcDateTime(new Date(utcMs));
+      if (formatted) return formatted;
+    }
+  }
+
+  if (fecha_recepcion && hora_recepcion) {
+    return `${fecha_recepcion} ${hora_recepcion}`;
+  }
+
+  return null;
+};
+
 const registrarEncomienda = async (data, usuario) => {
   try {
     console.log('[ENCOMIENDA] Inicio registro, conserje ID:', usuario.id);
@@ -16,14 +60,21 @@ const registrarEncomienda = async (data, usuario) => {
       tamanio,
       descripcion,
       fecha_recepcion,
-      hora_recepcion
+      hora_recepcion,
+      fecha_recepcion_utc,
+      timezone_offset
     } = data;
 
     if (!id_residente || !id_courier || !tracking || !tipo_paquete || !tamanio) {
       throw new Error('Datos obligatorios incompletos');
     }
 
-    const fechaHoraRecepcion = `${fecha_recepcion} ${hora_recepcion}`;
+    const fechaHoraRecepcion = buildFechaHoraRecepcion({
+      fecha_recepcion,
+      hora_recepcion,
+      fecha_recepcion_utc,
+      timezone_offset
+    });
 
    
     const idEncomienda = await encomiendaRepository.insertar({
