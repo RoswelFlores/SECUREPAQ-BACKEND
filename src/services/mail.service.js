@@ -1,6 +1,28 @@
 const transporter = require('../config/mail');
 const residenteRepository = require('../repositories/residente.repository');
+const usuarioRepository = require('../repositories/usuario.repository');
 const notificacionService = require('./notificacion.service');
+
+const resolveUsuarioIdByEmail = async (email) => {
+  if (!email) return null;
+  const usuario = await usuarioRepository.findByEmail(email);
+  return usuario ? usuario.id_usuario : null;
+};
+
+const registrarNotificacionSeguro = async (mensaje, email, idEncomienda, tipo) => {
+  const idUsuario = await resolveUsuarioIdByEmail(email);
+  if (!idUsuario) {
+    console.warn('[MAIL] Usuario no encontrado para notificacion:', email || 'sin-email');
+    return;
+  }
+
+  await notificacionService.registrarNotificacion(
+    mensaje,
+    idUsuario,
+    idEncomienda,
+    tipo
+  );
+};
 
 const sendRecoverPasswordMail = async (to, password,id_usuario) => {
   try {
@@ -48,13 +70,19 @@ const sendUsuarioNuevoMail = async (to, password) => {
 const sendNuevaEncomiendaMail = async (idResidente, otp , idEncomienda) => {
   try {
     const residente = await residenteRepository.findById(idResidente);
+    if (!residente) {
+      console.warn('[MAIL] Residente no encontrado:', idResidente);
+      return;
+    }
 
-    await notificacionService.registrarNotificacion(
-      'Nueva encomienda registrada',
-      residente.id_residente,
-      idEncomienda,
-      'NUEVA_ENCOMIENDA'
-    );
+    if (residente) {
+      await registrarNotificacionSeguro(
+        'Nueva encomienda registrada',
+        residente.email,
+        idEncomienda,
+        'NUEVA_ENCOMIENDA'
+      );
+    }
 
     console.log('[MAIL] Simulando envío de correo a:', residente.email , 'con OTP:', otp);
     // await transporter.sendMail({
@@ -76,16 +104,21 @@ const sendNuevaEncomiendaMail = async (idResidente, otp , idEncomienda) => {
 const sendRetiroConfirmadoMail = async (idResidente,idEncomienda) => {
   try {
 
-    await notificacionService.registrarNotificacion(
+    const residente = await residenteRepository.findById(idResidente);
+    if (!residente) {
+      console.warn('[MAIL] Residente no encontrado:', idResidente);
+      return;
+    }
+
+    await registrarNotificacionSeguro(
       'Encomienda retirada exitosamente',
-      idResidente,
+      residente.email,
       idEncomienda,
       'RETIRO_CONFIRMADO'
     );
 
     console.log('[MAIL] Enviando correo confirmación retiro');
 
-    const residente = await residenteRepository.findById(idResidente);
     console.log('Envio de correo de retiro', residente);
 
     // await transporter.sendMail({
@@ -120,12 +153,24 @@ const sendRecordatorioMail = async (recordatorio) => {
     const email = recordatorio.email;
     const nombre = recordatorio.nombre || 'residente';
 
-    await notificacionService.registrarNotificacion(
-      'Recordatorio: tiene una encomienda pendiente de retiro',
-      idResidente,
-      idEncomienda,
-      'RECORDATORIO_3_DIAS'
-    );
+    if (email) {
+      await registrarNotificacionSeguro(
+        'Recordatorio: tiene una encomienda pendiente de retiro',
+        email,
+        idEncomienda,
+        'RECORDATORIO_3_DIAS'
+      );
+    } else if (idResidente) {
+      const residente = await residenteRepository.findById(idResidente);
+      if (residente) {
+        await registrarNotificacionSeguro(
+          'Recordatorio: tiene una encomienda pendiente de retiro',
+          residente.email,
+          idEncomienda,
+          'RECORDATORIO_3_DIAS'
+        );
+      }
+    }
 
     console.log('[MAIL] Simulando envio de recordatorio a:', email, 'encomienda:', idEncomienda);
     // await transporter.sendMail({
