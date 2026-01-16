@@ -64,18 +64,31 @@ const crearUsuario = async (data) => {
     await connection.commit();
     transactionActive = false;
 
-    try {
-      await mailService.sendUsuarioNuevoMail(
-        data.email,
-        passwordTemporal
-      );
-      
-    } catch (mailError) {
-      console.error('[ADMIN] Error enviando correo:', mailError.message);
-      throw new Error('Usuario creado, pero no se pudo enviar el correo de recuperacion.');
+    let mailWarning = null;
+    const mailConfigured = Boolean(
+      process.env.MAIL_HOST &&
+      process.env.MAIL_PORT &&
+      process.env.MAIL_USER &&
+      process.env.MAIL_PASS
+    );
+
+    if (!mailConfigured) {
+      mailWarning = 'Usuario creado, pero el correo no esta configurado.';
+    } else {
+      try {
+        await mailService.sendUsuarioNuevoMail(
+          data.email,
+          passwordTemporal
+        );
+      } catch (mailError) {
+        console.error('[ADMIN] Error enviando correo:', mailError.message);
+        mailWarning = 'Usuario creado, pero no se pudo enviar el correo de recuperacion.';
+      }
     }
 
-    return { message: 'Usuario creado correctamente' };
+    const response = { message: 'Usuario creado correctamente' };
+    if (mailWarning) response.warning = mailWarning;
+    return response;
 
   } catch (error) {
     if (transactionActive) {
