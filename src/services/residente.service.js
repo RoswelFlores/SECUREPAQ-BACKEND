@@ -5,11 +5,27 @@ const auditoriaService = require('./auditoria.service');
 const mailService = require('./mail.service');
 const residenteRepository = require('../repositories/residente.repository');
 const notificacionRepository = require('../repositories/notificacion.repository');
+const usuarioRepository = require('../repositories/usuario.repository');
 
-const obtenerPendientes = async (idResidente) => {
+const resolveResidenteId = async (idUsuario) => {
+  const usuario = await usuarioRepository.findById(idUsuario);
+  if (!usuario || !usuario.email) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  const residente = await residenteRepository.findByEmail(usuario.email);
+  if (!residente) {
+    throw new Error('Residente no encontrado');
+  }
+
+  return residente.id_residente;
+};
+
+const obtenerPendientes = async (idUsuario) => {
   try {
     console.log('[RESIDENTE] Cargando pendientes');
 
+    const idResidente = await resolveResidenteId(idUsuario);
     return await encomiendaRepository.findPendientesByResidente(idResidente);
 
   } catch (error) {
@@ -18,10 +34,11 @@ const obtenerPendientes = async (idResidente) => {
   }
 };
 
-const obtenerHistorial = async (idResidente) => {
+const obtenerHistorial = async (idUsuario) => {
   try {
     console.log('[RESIDENTE] Cargando historial');
 
+    const idResidente = await resolveResidenteId(idUsuario);
     return await encomiendaRepository.findHistorialByResidente(idResidente);
 
   } catch (error) {
@@ -30,10 +47,11 @@ const obtenerHistorial = async (idResidente) => {
   }
 };
 
-const regenerarOtp = async (idResidente, idEncomienda) => {
+const regenerarOtp = async (idUsuario, idEncomienda) => {
   try {
     console.log('[RESIDENTE] Regenerando OTP');
 
+    const idResidente = await resolveResidenteId(idUsuario);
     const encomienda = await encomiendaRepository.findById(idEncomienda);
     if (!encomienda || encomienda.id_residente !== idResidente) {
       throw new Error('No autorizado');

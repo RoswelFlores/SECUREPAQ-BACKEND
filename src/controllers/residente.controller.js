@@ -4,9 +4,9 @@ const residenteService = require('../services/residente.service');
 const getPendientes = async (req, res) => {
   try {
     
-    const idResidente = req.user.id;
+    const idUsuario = req.user.id;
 
-    const data = await residenteService.obtenerPendientes(idResidente);
+    const data = await residenteService.obtenerPendientes(idUsuario);
     return res.json(data);
 
   } catch (error) {
@@ -17,9 +17,9 @@ const getPendientes = async (req, res) => {
 
 const getHistorial = async (req, res) => {
   try {
-    const idResidente = req.user.id;
+    const idUsuario = req.user.id;
 
-    const data = await residenteService.obtenerHistorial(idResidente);
+    const data = await residenteService.obtenerHistorial(idUsuario);
     return res.json(data);
 
   } catch (error) {
@@ -30,14 +30,14 @@ const getHistorial = async (req, res) => {
 
 const regenerarOtp = async (req, res) => {
   try {
-    const idResidente = req.user.id;
+    const idUsuario = req.user.id;
     const { id_encomienda } = req.body;
 
     if (!id_encomienda) {
       return res.status(400).json({ error: 'id_encomienda es obligatorio' });
     }
 
-    const result = await residenteService.regenerarOtp(idResidente, id_encomienda);
+    const result = await residenteService.regenerarOtp(idUsuario, id_encomienda);
     return res.json(result);
 
   } catch (error) {
