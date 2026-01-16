@@ -10,7 +10,8 @@ const registrar = async (req, res) => {
     return res.status(201).json(result);
 
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    const status = error && error.status ? error.status : 400;
+    return res.status(status).json({ error: error.message });
   }
 };
 

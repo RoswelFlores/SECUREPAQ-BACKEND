@@ -57,6 +57,13 @@ const registrarEncomienda = async (data, usuario) => {
     };
 
   } catch (error) {
+    if (error && (error.code === 'ER_DUP_ENTRY' || error.errno === 1062)) {
+      console.error('[ENCOMIENDA] Error registro: tracking duplicado');
+      const duplicateError = new Error('El tracking ya esta registrado. Usa uno diferente.');
+      duplicateError.status = 409;
+      throw duplicateError;
+    }
+
     console.error('[ENCOMIENDA] Error registro:', error.message);
     throw error;
   }
