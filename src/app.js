@@ -1,16 +1,33 @@
-require('./config/db')
+require('./config/db');
+require('./config/mail');
+require('./jobs/recordatorio.job');
+
 const express = require('express');
 const cors = require('cors');
 
+const authRoutes = require('./routes/auth.routes');
+const encomiendaRoutes = require('./routes/encomienda.routes');
+const otpRoutes = require('./routes/otp.routes');
+const notificacionRoutes = require('./routes/notificacion.routes');
+const conserjeriaRoutes = require('./routes/conserjeria.routes');
+const adminRoutes = require('./routes/admin.routes');
+const residenteRoutes = require('./routes/residente.routes');
 const app = express();
 
-// Middlewares globales
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba
+app.use('/auth', authRoutes);
+app.use('/encomiendas', encomiendaRoutes);
+app.use('/otp', otpRoutes);
+app.use('/notificaciones', notificacionRoutes);
+app.use('/conserjeria', conserjeriaRoutes);
+app.use('/admin', adminRoutes);
+app.use('/residente', residenteRoutes);
+
+
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'SECUREPAQ backend activo' });
 });
 
-module.exports = app; // 👈 ESTO ES CLAVE
+module.exports = app;

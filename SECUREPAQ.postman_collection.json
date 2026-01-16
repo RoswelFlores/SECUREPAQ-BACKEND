@@ -1,0 +1,378 @@
+{
+  "info": {
+    "name": "SECUREPAQ Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "userId", "value": "1" },
+    { "key": "residenteId", "value": "1" },
+    { "key": "courierId", "value": "1" },
+    { "key": "encomiendaId", "value": "1" },
+    { "key": "departamentoId", "value": "1" },
+    { "key": "notificacionId", "value": "1" },
+    { "key": "otpCode", "value": "123456" },
+    { "key": "searchQuery", "value": "juan" },
+    { "key": "searchLimit", "value": "10" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          },
+          "auth": { "type": "noauth" }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@securepaq.test\",\n  \"password\": \"Password123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "  pm.collectionVariables.set(\"token\", json.token);",
+                  "}",
+                  "if (json && json.usuario && json.usuario.id) {",
+                  "  pm.collectionVariables.set(\"userId\", json.usuario.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "auth": { "type": "noauth" }
+        },
+        {
+          "name": "Recover Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@securepaq.test\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/recover-password"
+          },
+          "auth": { "type": "noauth" }
+        }
+      ]
+    },
+    {
+      "name": "Encomiendas",
+      "item": [
+        {
+          "name": "Registrar Encomienda",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_residente\": {{residenteId}},\n  \"id_courier\": {{courierId}},\n  \"tracking\": \"ABC123456\",\n  \"tipo_paquete\": \"PAQUETE\",\n  \"tamanio\": \"MEDIANO\",\n  \"descripcion\": \"Caja con documentos\",\n  \"fecha_recepcion\": \"2024-01-15\",\n  \"hora_recepcion\": \"14:30\"\n}"
+            },
+            "url": "{{baseUrl}}/encomiendas"
+          }
+        },
+        {
+          "name": "Confirmar Retiro",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_encomienda\": {{encomiendaId}},\n  \"observacion\": \"Retiro sin novedades\"\n}"
+            },
+            "url": "{{baseUrl}}/encomiendas/confirmar-retiro"
+          }
+        }
+      ]
+    },
+    {
+      "name": "OTP",
+      "item": [
+        {
+          "name": "Validar OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otp\": \"{{otpCode}}\"\n}"
+            },
+            "url": "{{baseUrl}}/otp/validar-otp"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notificaciones",
+      "item": [
+        {
+          "name": "Ejecutar Recordatorios",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/notificaciones/ejecutar-recordatorios"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conserjeria",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/conserjeria/dashboard"
+          }
+        },
+        {
+          "name": "Listado Encomiendas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/conserjeria/encomiendas"
+          }
+        },
+        {
+          "name": "Buscar Residentes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/conserjeria/residentes?query={{searchQuery}}&limit={{searchLimit}}"
+          }
+        },
+        {
+          "name": "Listar Residentes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/conserjeria/residentes-lista"
+          }
+        },
+        {
+          "name": "Listar Couriers",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/conserjeria/couriers"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Count All Users",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/countAllUsers"
+          }
+        },
+        {
+          "name": "List Usuarios",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/usuarios"
+          }
+        },
+        {
+          "name": "Crear Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"residente@securepaq.test\",\n  \"rol\": \"RESIDENTE\",\n  \"nombre\": \"Juan Perez\",\n  \"rut\": \"11.111.111-1\",\n  \"telefono\": \"+56911111111\",\n  \"id_departamento\": {{departamentoId}}\n}"
+            },
+            "url": "{{baseUrl}}/admin/usuarios"
+          }
+        },
+        {
+          "name": "Usuario Resumen",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/usuarios/{{userId}}/resumen"
+          }
+        },
+        {
+          "name": "Editar Perfil Usuario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nuevo@securepaq.test\",\n  \"telefono\": \"+56911111111\",\n  \"password_nueva\": \"Password123\",\n  \"password_confirmacion\": \"Password123\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/usuarios/{{userId}}/perfil"
+          }
+        },
+        {
+          "name": "Cambiar Estado Usuario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": true\n}"
+            },
+            "url": "{{baseUrl}}/admin/usuarios/{{userId}}"
+          }
+        },
+        {
+          "name": "Reset Password Usuario",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/usuarios/{{userId}}/reset-password"
+          }
+        },
+        {
+          "name": "Editar Usuario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nuevo@securepaq.test\",\n  \"rol\": \"RESIDENTE\",\n  \"nombre\": \"Juan Perez\",\n  \"rut\": \"11.111.111-1\",\n  \"telefono\": \"+56911111111\",\n  \"id_departamento\": {{departamentoId}},\n  \"activo\": true,\n  \"is_active\": true\n}"
+            },
+            "url": "{{baseUrl}}/admin/editar-usuarios/{{userId}}"
+          }
+        },
+        {
+          "name": "Guardar Estructura",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"edificio\": {\n    \"nombre\": \"Edificio Central\",\n    \"direccion\": \"Av. Principal 123\",\n    \"comuna\": \"Santiago\",\n    \"ciudad\": \"Santiago\"\n  },\n  \"departamentos\": [\n    {\n      \"id_departamento\": {{departamentoId}},\n      \"numero\": \"101\",\n      \"piso\": 1\n    },\n    {\n      \"numero\": \"102\",\n      \"piso\": 1\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/admin/estructura"
+          }
+        },
+        {
+          "name": "Obtener Estructura",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/estructura"
+          }
+        },
+        {
+          "name": "Listar Departamentos",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/departamentos"
+          }
+        },
+        {
+          "name": "Auditoria",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/auditoria"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Residente",
+      "item": [
+        {
+          "name": "Pendientes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/residente/pendientes"
+          }
+        },
+        {
+          "name": "Historial",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/residente/historial"
+          }
+        },
+        {
+          "name": "Regenerar OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_encomienda\": {{encomiendaId}}\n}"
+            },
+            "url": "{{baseUrl}}/residente/regenerar-otp"
+          }
+        },
+        {
+          "name": "Notificaciones",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/residente/notificaciones"
+          }
+        },
+        {
+          "name": "Marcar Notificacion Como Leida",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_notificacion\": {{notificacionId}}\n}"
+            },
+            "url": "{{baseUrl}}/residente/notificaciones/marcar-como-leida"
+          }
+        }
+      ]
+    }
+  ]
+}

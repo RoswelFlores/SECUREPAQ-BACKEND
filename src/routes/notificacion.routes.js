@@ -3,13 +3,13 @@ const router = express.Router();
 
 const verifyToken = require('../middlewares/auth.middleware');
 const authorizeRoles = require('../middlewares/role.middleware');
-const otp = require('../controllers/otp.controller');
+const notificacionController = require('../controllers/notificacion.controller');
 
-router.post(
-  '/validar-otp',
+router.get(
+  '/ejecutar-recordatorios',
   verifyToken,
-  authorizeRoles('CONSERJERIA'),
-  otp.validarOTP
+  authorizeRoles('ADMIN'),
+  notificacionController.ejecutarRecordatorios
 );
 
 module.exports = router;
